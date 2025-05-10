@@ -511,18 +511,15 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-  loadApplicationTimeline();
-  loadFileStatusAndDetails();
-  loadProjectStatus();
-  loadPaymentStatusFromExcel();
+    window.addEventListener('DOMContentLoaded', async () => {
+  await loadApplicationTimeline();
+  await loadFileStatusAndDetails();
+  await loadProjectStatus();
+  await loadPaymentStatusFromExcel();
 
-  setTimeout(() => {
   checkTimelineCompletion();
   updateProgressBar();
   enforceTimelineEditPermissions();
-}, 1000);
-
 });
 
 

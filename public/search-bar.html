@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Client - JK SOLAR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #a7ffeb);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+.logo {
+  width: 120px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+    h1 {
+      color: #00695c;
+      margin-top: 10px;
+    }
+
+    .search-box {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: #00796b;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    #continueButton {
+      display: none;
+      margin-top: 15px;
+      background-color: #43a047;
+    }
+
+    @media screen and (max-width: 800px) {
+        body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #e0f7fa, #a7ffeb);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 30px; /* 🍽️ Add top space instead of centering vertically */
+}
+
+h1 {
+  color: #00695c;
+  margin-bottom: 20px;
+  font-size: 26px;
+}
+
+  .search-box {
+    padding: 20px;
+    width: 85%;
+    margin-top: 0px;
+  }
+
+  h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  input[type="text"] {
+  width: 90%;
+  padding: 10px;
+  font-size: 14px; /* 🍽️ Reduced */
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+  button {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+}
+
+  </style>
+</head>
+<body>
+    <img src="/logo.png" alt="JK Solar Logo" class="logo" />
+
+  <h1>🔍 Search Client</h1>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Enter client name..." />
+    <button onclick="searchClient()">Search</button>
+
+    <div class="result" id="searchResult"></div>
+    <button id="continueButton" onclick="goToTimeline()">Continue</button>
+  </div>
+
+  <script>
+    function searchClient() {
+      const name = document.getElementById('searchInput').value.trim();
+      const resultBox = document.getElementById('searchResult');
+      const continueButton = document.getElementById('continueButton');
+
+      if (!name) {
+        resultBox.textContent = "Please enter a client name.";
+        resultBox.style.color = "red";
+        continueButton.style.display = 'none';
+        return;
+      }
+
+      fetch(`/search-client?name=${encodeURIComponent(name)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Server error");
+          return res.json();
+        })
+        .then(data => {
+          if (data.found) {
+            resultBox.textContent = `✅ Client "${name}" found.`;
+            resultBox.style.color = "green";
+            continueButton.style.display = 'inline';
+          } else {
+            resultBox.textContent = `❌ Client "${name}" not found.`;
+            resultBox.style.color = "red";
+            continueButton.style.display = 'none';
+          }
+        })
+        .catch(err => {
+          resultBox.textContent = "🚫 Error searching client.";
+          resultBox.style.color = "red";
+          continueButton.style.display = 'none';
+        });
+    }
+
+    function goToTimeline() {
+      const clientName = document.getElementById('searchInput').value.trim();
+      if (!clientName) {
+        alert("Please enter a client name");
+        return;
+      }
+      localStorage.setItem("clientName", clientName);
+      window.location.href = "timeline.html";
+    }
+  </script>
+
+</body>
+</html>

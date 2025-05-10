@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client Timeline - JK Solar CRM</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f2f2f2;
+      padding: 40px 20px;
+      color: #333;
+    }
+    .title {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+    .progress-container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 25px;
+      margin: 30px auto;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .progressbar {
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: relative;
+      counter-reset: step;
+      z-index: 1;
+    }
+
+    .progressbar #progressFill {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background-color: #2ecc71;
+      z-index: 0;
+      transition: width 0.2s ease-in-out;
+    }
+
+    .progressbar li {
+      position: relative;
+      text-align: center;
+      width: 100%;
+      z-index: 2;
+    }
+
+    .progressbar button {
+      all: unset;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .progressbar li span {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .progressbar li i {
+      font-size: 20px;
+      color: #ccc;
+      background-color: #fff;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      padding: 10px;
+      transition: all 0.4s ease;
+    }
+
+    .progressbar li.done i {
+      color: white;
+      background-color: #2ecc71;
+      border-color: #2ecc71;
+    }
+
+    .progressbar li.current i {
+      color: #3498db;
+      border-color: #3498db;
+    }
+
+    .progressbar li.pending i {
+      color: #e74c3c;
+      border-color: #e74c3c;
+    }
+    .progressbar::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background-color: #ccc; /* Gray background always visible */
+  z-index: 0;
+}
+
+.progressbar::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 0;
+  height: 5px;
+  background-color: #2ecc71; /* Green progress */
+  z-index: 1;
+  width: var(--progress, 0%);
+  transition: width 0.1s ease-in-out;
+}
+
+
+
+
+    .vertical-timeline {
+      position: relative;
+      margin: 30px auto;
+      padding-left: 40px;
+      border-left: 3px solid #ccc;
+      max-width: 700px;
+      display: none;
+    }
+    .vertical-timeline.show {
+      display: block;
+    }
+    .vertical-timeline h3 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    .vertical-timeline ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .vertical-timeline ul li {
+      position: relative;
+      padding-left: 25px;
+      margin-bottom: 20px;
+      font-size: 15px;
+      color: #333;
+    }
+    .vertical-timeline ul li::before {
+      content: '';
+      position: absolute;
+      left: -13px;
+      top: 2px;
+      width: 12px;
+      height: 12px;
+      background-color: #3498db;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px #3498db;
+    }
+    .vertical-timeline ul li::after {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 16px;
+      width: 3px;
+      height: 100%;
+      background-color: #ccc;
+    }
+    .vertical-timeline ul li:last-child::after {
+      display: none;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 3px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #saveTimelineBtn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 12px 25px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #saveTimelineBtn:hover {
+      background-color: #2980b9;
+    }
+    #successMessage, #errorMessage {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    #successMessage { color: green; }
+    #errorMessage { color: red; }
+
+    #paymentStatusForm input {
+  width: 200px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+</style>
+</head>
+<body>
+  <h1 class="title">Client Timeline</h1>
+
+  <div class="progress-container">
+    <ul class="progressbar">
+      <div id="progressFill"></div>
+      <li><button onclick="toggleTimeline('documentTimeline')"><i class="fas fa-check"></i><span>Documents</span></button></li>
+      <li><button id="applicationBtn"><i class="fas fa-check"></i><span>Application</span></button></li>
+      <li><button onclick="toggleTimeline('projectTimeline')"><i class="fas fa-check"></i><span>Project Status</span></button></li>
+      <li><button onclick="toggleTimeline('paymentTimeline')"><i class="fas fa-check"></i><span>Payment Status</span></button></li>
+    </ul>
+  </div>
+  
+  
+  
+
+
+
+    <!-- Document Timeline -->
+    <div class="vertical-timeline" id="documentTimeline">
+      <h3>Document Upload Timeline</h3>
+      <ul id="fileStatusList"></ul>
+    </div>
+  
+    <!-- Application Timeline -->
+    <div class="vertical-timeline" id="applicationTimeline">
+      <h3>Application Timeline</h3>
+      <ul>
+        <li>
+          <form id="timelineForm">
+            <label for="appliedKW">Applied KW:</label>
+            <input type="text" id="appliedKW" name="appliedKW" required>
+            <label for="appliedOnPMSurya">Applied On PM Surya (Subsidy):</label>
+            <input type="text" id="appliedOnPMSurya" name="appliedOnPMSurya" required>
+            <label for="applicationDHBVN">Application DHBVN:</label>
+            <input type="text" id="applicationDHBVN" name="applicationDHBVN" required>
+            <label for="loadChangeReductionNewConnection">Load/Name Change/Reduction/New Connection:</label>
+            <select id="loadChangeReductionNewConnection" name="loadChangeReductionNewConnection" required>
+              <option value="">Select an Option</option>
+              <option value="Load">Load</option>
+              <option value="Name Change">Name Change</option>
+              <option value="Reduction">Reduction</option>
+              <option value="New Connection">New Connection</option>
+            </select>
+            <button type="submit" id="saveTimelineBtn">Save Timeline</button>
+          </form>
+        </li>
+      </ul>
+      <p id="successMessage" style="display:none;">Timeline data saved successfully!</p>
+      <p id="errorMessage" style="display:none;">Error saving timeline data. Please try again.</p>
+  
+      <div id="savedTimeline" style="margin-top: 20px; display: none;">
+        <ul>
+          <li>
+            <strong>Saved Data</strong>
+            <ul style="margin-top: 10px;">
+              <li><strong>Applied KW:</strong> <span id="saved_appliedKW"></span></li>
+              <li><strong>Applied on PM Surya:</strong> <span id="saved_appliedOnPMSurya"></span></li>
+              <li><strong>Application DHBVN:</strong> <span id="saved_applicationDHBVN"></span></li>
+              <li><strong>Load Change / Reduction / New Connection:</strong> <span id="saved_loadChangeReductionNewConnection"></span></li>
+            </ul>
+          </li>
+        </ul>
+        <button id="editTimelineBtn" style="margin-top: 10px; background:#f39c12; color:white; border:none; padding:8px 16px; border-radius:5px; cursor:pointer;">Edit</button>
+      </div>
+    </div>
+  
+    <!-- Other Timelines -->
+    <div class="vertical-timeline" id="projectTimeline">
+      <h3>Project Status Timeline</h3>
+    
+      <!-- ✅ SAVED DATA VIEW -->
+      <ul id="projectStatusSaved" style="display: none;">
+        <li><strong>Civil:</strong> <span id="saved_Civil"></span></li>
+        <li><strong>Earthing:</strong> <span id="saved_Earthing"></span></li>
+        <li><strong>Earthing cable:</strong> <span id="saved_EarthingCable"></span></li>
+        <li><strong>Panel:</strong> <span id="saved_Panel"></span></li>
+        <li><strong>Inverter:</strong> <span id="saved_Inverter"></span></li>
+        <li><strong>ACDB:</strong> <span id="saved_ACDB"></span></li>
+        <li><strong>DCDB:</strong> <span id="saved_DCDB"></span></li>
+        <li><strong>AC cable:</strong> <span id="saved_ACCable"></span></li>
+        <li><strong>DC cable:</strong> <span id="saved_DCCable"></span></li>
+        <li><strong>LA:</strong> <span id="saved_LA"></span></li>
+        <li><strong>Net Metering:</strong> <span id="saved_NetMetering"></span></li>
+      </ul>
+      <button id="editProjectStatusBtn" style="display: none; margin-top: 10px; background: #f39c12; color: #fff; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">Edit</button>
+    
+      <!-- ✍️ EDIT FORM -->
+      <form id="projectStatusForm">
+        <ul>
+          <li>Civil:
+            <label><input type="radio" name="Civil" value="✅"> ✅</label>
+            <label><input type="radio" name="Civil" value="❌"> ❌</label>
+          </li>
+          <li>Earthing:
+            <label><input type="radio" name="Earthing" value="✅"> ✅</label>
+            <label><input type="radio" name="Earthing" value="❌"> ❌</label>
+          </li>
+          <li>Earthing cable:
+            <label><input type="radio" name="EarthingCable" value="✅"> ✅</label>
+            <label><input type="radio" name="EarthingCable" value="❌"> ❌</label>
+          </li>
+          <li>Panel:
+            <label><input type="radio" name="Panel" value="✅"> ✅</label>
+            <label><input type="radio" name="Panel" value="❌"> ❌</label>
+          </li>
+          <li>Inverter:
+            <label><input type="radio" name="Inverter" value="✅"> ✅</label>
+            <label><input type="radio" name="Inverter" value="❌"> ❌</label>
+          </li>
+          <li>ACDB:
+            <label><input type="radio" name="ACDB" value="✅"> ✅</label>
+            <label><input type="radio" name="ACDB" value="❌"> ❌</label>
+          </li>
+          <li>DCDB:
+            <label><input type="radio" name="DCDB" value="✅"> ✅</label>
+            <label><input type="radio" name="DCDB" value="❌"> ❌</label>
+          </li>
+          <li>AC cable:
+            <label><input type="radio" name="ACCable" value="✅"> ✅</label>
+            <label><input type="radio" name="ACCable" value="❌"> ❌</label>
+          </li>
+          <li>DC cable:
+            <label><input type="radio" name="DCCable" value="✅"> ✅</label>
+            <label><input type="radio" name="DCCable" value="❌"> ❌</label>
+          </li>
+          <li>LA:
+            <label><input type="radio" name="LA" value="✅"> ✅</label>
+            <label><input type="radio" name="LA" value="❌"> ❌</label>
+          </li>
+          <li>Net Metering:
+            <label><input type="radio" name="NetMetering" value="✅"> ✅</label>
+            <label><input type="radio" name="NetMetering" value="❌"> ❌</label>
+          </li>
+        </ul>
+        <button type="submit" style="margin-top: 10px;">Save Project Status</button>
+        <p id="projectStatusSuccess" style="color: green; display: none;">✅ Project status saved!</p>
+        <p id="projectStatusError" style="color: red; display: none;">❌ Error saving project status.</p>
+      </form>
+    </div>
+    
+    
+    
+    
+  <!--Paymenttimeline-->
+  <div class="vertical-timeline" id="paymentTimeline">
+    <h3>Payment Status Timeline</h3>
+  
+    <!-- ✅ SAVED VIEW -->
+    <ul id="paymentStatusSaved" style="display: none;">
+      <li><strong>Total Cost:</strong> ₹ <span id="saved_totalCost"></span></li>
+      <li><strong>Advance:</strong> ₹ <span id="saved_advance"></span></li>
+      <li><strong>2nd Installment:</strong> ₹ <span id="saved_installment2"></span></li>
+      <li><strong>3rd Installment:</strong> ₹ <span id="saved_installment3"></span></li>
+      <li><strong>Final:</strong> ₹ <span id="saved_finalPayment"></span></li>
+      <li><strong>Balance:</strong> ₹ <span id="saved_balance"></span></li>
+    </ul>
+    <button id="editPaymentStatusBtn" style="display: none; margin-top: 10px; background:#f39c12; color:white; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Edit</button>
+  
+    <!-- ✍️ EDIT FORM -->
+    <form id="paymentStatusForm">
+      <ul>
+        <li><strong>Total Cost:</strong> ₹ <input type="number" id="totalCost" name="totalCost" readonly></li>
+        <li><strong>Advance:</strong> ₹ <input type="number" id="advance" name="advance" readonly></li>
+        <li><strong>2nd Installment:</strong> ₹ <input type="text" id="installment2" name="installment2" style="width: 200px;"></li>
+        <li><strong>3rd Installment:</strong> ₹ <input type="number" id="installment3" name="installment3"></li>
+        <li><strong>Final:</strong> ₹ <input type="text" id="finalPayment" name="finalPayment" style="width: 200px;"></li>
+        <li><strong>Balance:</strong> ₹ <input type="number" id="balance" name="balance" readonly></li>
+      </ul>
+      <button type="submit" style="margin-top: 10px;">Save Payment Status</button>
+      <p id="paymentStatusSuccess" style="color: green; display: none;">✅ Payment status saved!</p>
+      <p id="paymentStatusError" style="color: red; display: none;">❌ Error saving payment status.</p>
+    </form>
+  </div>
+  
+    
+  
+  
+    
+      <!-- Final Scripts -->
+  <script>
+    async function loadApplicationTimeline() {
+      const clientName = localStorage.getItem('clientName');
+      if (!clientName) return;
+      try {
+        const res = await fetch(`/application-timeline/${encodeURIComponent(clientName)}`);
+        const data = await res.json();
+
+        // Fill form fields
+        document.getElementById('appliedKW').value = data.appliedKW || '';
+        document.getElementById('appliedOnPMSurya').value = data.appliedOnPMSurya || '';
+        document.getElementById('applicationDHBVN').value = data.applicationDHBVN || '';
+        document.getElementById('loadChangeReductionNewConnection').value = data.loadChangeReductionNewConnection || '';
+
+        // Fill saved display
+        document.getElementById('saved_appliedKW').textContent = data.appliedKW || 'N/A';
+        document.getElementById('saved_appliedOnPMSurya').textContent = data.appliedOnPMSurya || 'N/A';
+        document.getElementById('saved_applicationDHBVN').textContent = data.applicationDHBVN || 'N/A';
+        document.getElementById('saved_loadChangeReductionNewConnection').textContent = data.loadChangeReductionNewConnection || 'N/A';
+
+        document.getElementById('timelineForm').style.display = 'none';
+        document.getElementById('savedTimeline').style.display = 'block';
+      } catch (err) {
+        console.error('Error loading application timeline:', err);
+      }
+    }
+
+    document.getElementById('timelineForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const clientName = localStorage.getItem('clientName');
+      if (clientName) formData.append('clientName', clientName);
+
+      fetch('/save-timeline', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message) {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            loadApplicationTimeline();
+          }
+        })
+        .catch(() => {
+          document.getElementById('errorMessage').style.display = 'block';
+          document.getElementById('successMessage').style.display = 'none';
+        });
+    });
+
+    document.getElementById('editTimelineBtn')?.addEventListener('click', () => {
+      document.getElementById('timelineForm').style.display = 'block';
+      document.getElementById('savedTimeline').style.display = 'none';
+    });
+
+    function toggleTimeline(id) {
+      document.querySelectorAll('.vertical-timeline').forEach(t => t.classList.remove('show'));
+      const selected = document.getElementById(id);
+      if (selected) selected.classList.add('show');
+    }
+
+    document.getElementById('applicationBtn').addEventListener('click', function () {
+      toggleTimeline('applicationTimeline');
+    });
+
+    async function loadFileStatusAndDetails() {
+      const clientName = localStorage.getItem('clientName');
+      if (!clientName) return;
+      try {
+        const res = await fetch(`/file-status/${encodeURIComponent(clientName)}`);
+        const data = await res.json();
+        const list = document.getElementById('fileStatusList');
+        list.innerHTML = '';
+
+        const client = data.clientInfo;
+        const fields = [
+          { label: 'Name', value: client.name },
+          { label: 'Address', value: client.address },
+          { label: 'Mobile', value: client.mobile },
+          { label: 'Email', value: client.email },
+          { label: 'KW', value: client.kw }
+        ];
+        fields.forEach(field => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+          list.appendChild(li);
+        });
+
+        const divider = document.createElement('hr');
+        list.appendChild(divider);
+
+        data.files.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            ${item.file.replace(/\.[^/.]+$/, '').replace(/([A-Z])/g, ' $1')}
+            <span class="status">
+              <i class="fas fa-${item.exists ? 'check' : 'times'}-circle" style="color:${item.exists ? 'green' : 'red'};"></i>
+            </span>`;
+          list.appendChild(li);
+        });
+
+      } catch (err) {
+        console.error('Error loading file status:', err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+  loadApplicationTimeline();
+  loadFileStatusAndDetails();
+  loadProjectStatus();
+  loadPaymentStatusFromExcel();
+
+  setTimeout(() => {
+  checkTimelineCompletion();
+  updateProgressBar();
+  enforceTimelineEditPermissions();
+}, 1000);
+
+});
+
+
+
+
+
+    // Submit project status
+// 🟢 Submit and Save Project Status
+document.getElementById('projectStatusForm')?.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const clientName = localStorage.getItem('clientName');
+  if (!clientName) return;
+
+  formData.append('clientName', clientName);
+
+  fetch('/save-project-status', {
+    method: 'POST',
+    body: new URLSearchParams(formData)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      document.getElementById('projectStatusSuccess').style.display = 'block';
+      document.getElementById('projectStatusError').style.display = 'none';
+
+      // hide form and show saved
+      loadProjectStatus();
+      document.getElementById('projectStatusForm').style.display = 'none';
+      document.getElementById('projectStatusSaved').style.display = 'block';
+      document.getElementById('editProjectStatusBtn').style.display = 'inline-block';
+    } else {
+      throw new Error();
+    }
+  })
+  .catch(() => {
+    document.getElementById('projectStatusError').style.display = 'block';
+    document.getElementById('projectStatusSuccess').style.display = 'none';
+  });
+});
+
+// 🟡 Load and Show Project Status from Excel
+async function loadProjectStatus() {
+  const clientName = localStorage.getItem('clientName');
+  if (!clientName) return;
+
+  try {
+    const response = await fetch(`/project-status/${encodeURIComponent(clientName)}`);
+    const data = await response.json();
+    const status = data.status;
+
+    for (const field in status) {
+      const value = status[field];
+
+      // Set radio buttons
+      const radios = document.querySelectorAll(`input[name="${field}"]`);
+      radios.forEach(radio => {
+        radio.checked = radio.value === value;
+      });
+
+      // Show saved values
+      const savedSpan = document.getElementById(`saved_${field}`);
+      if (savedSpan) {
+        savedSpan.textContent = value || '❌';
+      }
+    }
+
+    // On page load: show saved view only if data exists
+    const filled = Object.values(status).some(v => v === '✅' || v === '❌');
+    if (filled) {
+      document.getElementById('projectStatusForm').style.display = 'none';
+      document.getElementById('projectStatusSaved').style.display = 'block';
+      document.getElementById('editProjectStatusBtn').style.display = 'inline-block';
+    }
+
+  } catch (err) {
+    console.error('❌ Failed to load project status:', err);
+  }
+}
+
+// 🟣 Enable Edit Mode
+document.getElementById('editProjectStatusBtn')?.addEventListener('click', () => {
+  document.getElementById('projectStatusForm').style.display = 'block';
+  document.getElementById('projectStatusSaved').style.display = 'none';
+  document.getElementById('editProjectStatusBtn').style.display = 'none';
+});
+
+//Script for payemnt calculation
+function autoCalculateBalance() {
+  const total = parseFloat(document.getElementById('totalCost').value) || 0;
+  const adv = parseFloat(document.getElementById('advance').value) || 0;
+  const i2 = parseFloat(document.getElementById('installment2').value) || 0;
+  const i3 = parseFloat(document.getElementById('installment3').value) || 0;
+  const final = parseFloat(document.getElementById('finalPayment').value) || 0;
+
+  const balance = total - (adv + i2 + i3 + final);
+  document.getElementById('balance').value = balance.toFixed(2);
+}
+
+
+['installment2', 'installment3', 'finalPayment'].forEach(id => {
+  document.getElementById(id).addEventListener('input', autoCalculateBalance);
+});
+
+//payment Autofetch Timeline
+async function loadPaymentStatusFromExcel() {
+  const clientName = localStorage.getItem('clientName');
+  if (!clientName) return;
+
+  try {
+    const res = await fetch(`/payment-status/${encodeURIComponent(clientName)}`);
+    const data = await res.json();
+
+    // Read-only values
+    const total = parseFloat(data.totalCost) || 0;
+    const adv = parseFloat(data.advance) || 0;
+
+    document.getElementById('totalCost').value = total;
+    document.getElementById('advance').value = adv;
+
+    // Auto-fill "Due" logic
+    const isCivilDone = data.projectStatus?.Civil === '✅';
+    const isNetDone = data.projectStatus?.NetMetering === '✅';
+
+    if (data.saved.installment2) {
+      document.getElementById('installment2').value = data.saved.installment2;
+    } else if (isCivilDone) {
+      document.getElementById('installment2').value = "Due";
+    }
+
+    if (data.saved.installment3) {
+      document.getElementById('installment3').value = data.saved.installment3;
+    }
+
+    if (data.saved.finalPayment) {
+      document.getElementById('finalPayment').value = data.saved.finalPayment;
+    } else if (isNetDone) {
+      document.getElementById('finalPayment').value = "Due";
+    }
+
+    if (data.saved.balance) {
+      document.getElementById('balance').value = data.saved.balance;
+    } else {
+      autoCalculateBalance();
+    }
+
+    // 🔁 Also update the display view
+    document.getElementById('saved_totalCost').textContent = total.toFixed(2);
+    document.getElementById('saved_advance').textContent = adv.toFixed(2);
+    document.getElementById('saved_installment2').textContent = document.getElementById('installment2').value || '';
+    document.getElementById('saved_installment3').textContent = document.getElementById('installment3').value || '';
+    document.getElementById('saved_finalPayment').textContent = document.getElementById('finalPayment').value || '';
+    document.getElementById('saved_balance').textContent = document.getElementById('balance').value || '';
+
+    // 🎯 Show saved view if any fields are filled
+    const anyValue = document.getElementById('installment2').value || document.getElementById('installment3').value || document.getElementById('finalPayment').value;
+    if (anyValue) {
+      document.getElementById('paymentStatusForm').style.display = 'none';
+      document.getElementById('paymentStatusSaved').style.display = 'block';
+      document.getElementById('editPaymentStatusBtn').style.display = 'inline-block';
+    }
+
+  } catch (err) {
+    console.error('❌ Error loading payment info:', err);
+  }
+}
+
+
+//fetch data from excel
+document.getElementById('paymentStatusForm')?.addEventListener('submit', function (e) {
+  e.preventDefault();
+  
+  const clientName = localStorage.getItem('clientName');
+  if (!clientName) return;
+
+  const formData = new FormData(this);
+  formData.append('clientName', clientName);
+
+  fetch('/save-payment-status', {
+    method: 'POST',
+    body: new URLSearchParams(formData)
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message) {
+        document.getElementById('paymentStatusSuccess').style.display = 'block';
+        document.getElementById('paymentStatusError').style.display = 'none';
+      } else {
+        throw new Error();
+      }
+    })
+    .catch(() => {
+      document.getElementById('paymentStatusError').style.display = 'block';
+      document.getElementById('paymentStatusSuccess').style.display = 'none';
+    });
+});
+
+// 🔁 Enable Edit Mode for Payment Status
+document.getElementById('editPaymentStatusBtn')?.addEventListener('click', () => {
+  document.getElementById('paymentStatusForm').style.display = 'block';
+  document.getElementById('paymentStatusSaved').style.display = 'none';
+  document.getElementById('editPaymentStatusBtn').style.display = 'none';
+});
+
+
+
+
+function updateProgressBar() {
+  const steps = document.querySelectorAll('.progressbar li');
+  let lastCompletedIndex = -1;
+
+  // Find the last completed step index
+  steps.forEach((step, index) => {
+    if (step.classList.contains('done')) {
+      lastCompletedIndex = index;
+    }
+  });
+
+  const totalSteps = steps.length - 1;
+  const percentage = (lastCompletedIndex / totalSteps) * 100;
+  document.getElementById('progressFill').style.width = `${Math.max(0, percentage)}%`;
+}
+
+function checkTimelineCompletion() {
+  const steps = document.querySelectorAll('.progressbar li');
+
+  // ✅ Step 1: Documents
+  const greenChecks = Array.from(document.querySelectorAll('#fileStatusList li'))
+  .slice(-8)
+  .filter(li => li.querySelector('i.fa-check-circle'));
+
+const docFilled = greenChecks.length === 8;
+if (docFilled) steps[0].classList.add('done');
+else steps[0].classList.remove('done');
+
+  // ✅ Step 2: Application
+  const appFilled = [
+    document.getElementById('appliedKW')?.value,
+    document.getElementById('appliedOnPMSurya')?.value,
+    document.getElementById('applicationDHBVN')?.value,
+    document.getElementById('loadChangeReductionNewConnection')?.value
+  ].every(val => val && val.trim() !== '');
+  if (appFilled) steps[1].classList.add('done'); else steps[1].classList.remove('done');
+
+  // ✅ Step 3: Project Status
+  const projectRadios = document.querySelectorAll('#projectStatusForm input[type="radio"]:checked');
+  if (projectRadios.length >= 11) steps[2].classList.add('done'); else steps[2].classList.remove('done');
+
+  // ✅ Step 4: Payment Status
+  const payVal2 = document.getElementById('installment2')?.value;
+  const payVal3 = document.getElementById('installment3')?.value;
+  const payFinal = document.getElementById('finalPayment')?.value;
+  const balanceVal = parseFloat(document.getElementById('balance')?.value) || 0;
+  if (payVal2 && payVal3 && payFinal && balanceVal === 0) {
+    steps[3].classList.add('done');
+  } else {
+    steps[3].classList.remove('done');
+  }
+
+  // 👇 Finally update progress bar width
+  updateProgressBar();
+}
+
+//timeline edit permission
+function enforceTimelineEditPermissions() {
+  const steps = document.querySelectorAll('.progressbar li');
+
+  const isDocComplete = steps[0].classList.contains('done');
+  const isAppComplete = steps[1].classList.contains('done');
+  const isProjectComplete = steps[2].classList.contains('done');
+
+  // APPLICATION TIMELINE LOCK
+  const appForm = document.querySelector('#applicationTimeline form');
+  const appInputs = appForm?.querySelectorAll('input, select, button');
+  if (!isDocComplete && appInputs) {
+    appInputs.forEach(input => input.disabled = true);
+    appForm.addEventListener('click', () => alert("Please complete Documents"), { once: true });
+  }
+
+  // PROJECT STATUS TIMELINE LOCK
+  const projForm = document.querySelector('#projectStatusForm');
+  const projInputs = projForm?.querySelectorAll('input, button');
+  if (!isAppComplete && projInputs) {
+    projInputs.forEach(input => input.disabled = true);
+    projForm.addEventListener('click', () => alert("Please complete Application"), { once: true });
+  }
+
+  // PAYMENT STATUS TIMELINE LOCK
+  const payForm = document.querySelector('#paymentStatusForm');
+  const payInputs = payForm?.querySelectorAll('input, button');
+  if (!isProjectComplete && payInputs) {
+    payInputs.forEach(input => input.disabled = true);
+    payForm.addEventListener('click', () => alert("Please complete Project Status"), { once: true });
+  }
+}
+
+//Step completing script
+function isStepCompleted(index) {
+  const steps = document.querySelectorAll('.progressbar li');
+  return steps[index]?.classList.contains('done');
+}
+
+function showAlert(message) {
+  alert(message); // Simple alert; can be styled later
+}
+
+document.getElementById('applicationBtn').addEventListener('click', function () {
+  if (!isStepCompleted(0)) {
+    showAlert('Please complete Documents');
+    return;
+  }
+  toggleTimeline('applicationTimeline');
+});
+
+document.querySelector('button[onclick*="projectTimeline"]').addEventListener('click', function () {
+  if (!isStepCompleted(1)) {
+    showAlert('Please complete Application');
+    return;
+  }
+  toggleTimeline('projectTimeline');
+});
+
+document.querySelector('button[onclick*="paymentTimeline"]').addEventListener('click', function () {
+  if (!isStepCompleted(2)) {
+    showAlert('Please complete Project Status');
+    return;
+  }
+  toggleTimeline('paymentTimeline');
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+
+
+</body>
+</html>

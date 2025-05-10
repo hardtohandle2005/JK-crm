@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+  overflow-x: hidden;
+}
+
+.container,
+.wrapper,
+.main-content { /* Use your actual parent container names */
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .mobile-stack {
+      width: 100%;
+      background: linear-gradient(145deg, #dfdfd1, #d4d470);
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    header img {
+      height: 60px;
+      margin-right: 20px;
+    }
+    header h1 {
+      font-size: 28px;
+      color: #333;
+    }
+    .top-buttons {
+      display: flex;
+      gap: 15px;
+      padding: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .top-buttons button {
+      padding: 12px 20px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .top-buttons button:hover {
+      background-color: #0056b3;
+    }
+    .info-box {
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 300px;
+  min-height: 200px;
+  font-size: 14px;
+  background-color: #fff;
+  margin: 20px 0; /* ✅ Removed horizontal centering */
+}
+
+#reminderContainer {
+  display: block;
+  padding: 0;
+  width: auto;
+  margin: 0;
+}
+#reminderBox,
+#finalStatusBox {
+  margin: 0;          /* remove vertical margin if any */
+  padding: 16px 18px;
+  min-height: 200px;  /* keep both same */
+  box-sizing: border-box;
+}
+
+    .leads-header-stack {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 30px;
+      gap: 30px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .heading-box {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #clientModal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+#clientModal .modal-content {
+  background: linear-gradient(135deg, #ffffff, #f7f9fc);
+  padding: 30px 25px;
+  border-radius: 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 420px;
+  font-family: 'Poppins', sans-serif;
+  animation: slideIn 0.4s ease-out;
+}
+
+#clientModal h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #2b2b2b;
+  text-align: center;
+}
+
+#clientModal label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+#clientModal input {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fefefe;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
+
+#clientModal input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+#clientModal button[type="submit"] {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#clientModal button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+#clientModal form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-boxes-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 20px;
+  margin-left: -50px;
+  width: 100%;
+  padding: 0 10px;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+}
+
+.close-button {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  font-size: 45px;
+  font-weight: bold;
+  color: #e53935; /* 🔴 Red color */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #c62828; /* Darker red on hover */
+}
+
+.modal-content {
+  position: relative;
+}
+
+
+#leadsTable th {
+  position: sticky;
+  top: 0;
+  background: #007BFF;
+  color: white;
+  z-index: 5;
+}
+
+/* Freeze the header + column 2 together */
+#leadsTable th:nth-child(2) {
+  left: 0;
+  z-index: 6;
+}
+
+/* Freeze column 2 (Consumer Name) in body rows */
+#leadsTable td:nth-child(2) {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
+}
+
+
+
+
+
+
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
+
+
+    @media (max-width: 800px) {
+      html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+      .heading-box {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  margin-left: -25px;
+  width: 100%;
+}
+
+.heading-box img {
+  height: 68px !important;
+}
+
+.heading-box h1 {
+  font-size: 28px !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.mobile-stack {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.status-boxes-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 0 15px;
+  margin-top: 10px;
+  margin-left: -30px;
+}
+
+#reminderBox,
+#finalStatusBox {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 16px 18px;
+  min-height: 220px;
+  box-sizing: border-box;
+}
+
+
+#reminderContainer {
+  width: 100% !important;
+  display: flex;
+  justify-content: center;
+  padding: 10px 15px;
+}
+
+#reminderBox {
+  width: 100%;
+  max-width: 370px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px;
+  margin: 10px auto;
+  font-family: 'Poppins', sans-serif;
+  animation: fadeInUp 0.3s ease-out;
+  text-align: left;
+  font-size: 14.2px;
+  color: #333;
+  line-height: 1.5;
+}
+
+
+#reminderBox h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+#reminderList {
+  font-size: 13.8px;
+  line-height: 1.6;
+  color: #555;
+  word-break: break-word;
+}
+
+#reminderList strong {
+  font-weight: 500;
+  color: #111;
+}
+
+#reminderBox {
+  font-weight: 400;
+}
+
+#reminderList strong {
+  font-weight: 500;
+}
+
+#finalStatusBox {
+  width: 100%;
+  max-width: 370px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px;
+  margin: 10px auto;
+  font-family: 'Poppins', sans-serif;
+  animation: fadeInUp 0.3s ease-out;
+  font-size: 14.2px;
+  color: #333;
+  line-height: 1.5;
+}
+#finalStatusBox h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#finalStatusBox span {
+  display: inline-block;
+  font-size: 13.8px;
+  margin-bottom: 8px;
+  color: #444;
+  line-height: 1.4;
+}
+
+#finalStatusBox span strong {
+  font-weight: 500;
+  color: #000;
+}
+
+#finalStatusBox button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-left: 8px;
+}
+
+  /* Stack status boxes + button row + search nicely */
+  .status-boxes-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 20px;
+  }
+
+  .top-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important; /* Aligned to left */
+    align-items: center !important;
+    flex-wrap: nowrap;
+    width: 100% !important;
+    max-width: none;
+    padding: 0 20px;
+    margin-top: 50px !important;
+    margin-left: -310px;
+    margin-bottom: 40px;
+    gap: 20px;
+  }
+
+  .top-buttons button {
+    margin-top: 0 !important;
+    margin-left: 0px;
+    flex: unset;
+    width: auto;
+    padding: 14px 26px !important;
+    font-size: 16px !important; /* slightly larger font */
+    border-radius: 10px; /* touch more roundness */
+    font-size: 14px !important;
+    border-radius: 8px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+
+  /* Move search bar below the button row */
+  #searchBox {
+    order: 4;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 360px;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    display: block;
+  }
+  .filter-container {
+  margin-top: -100px !important; /* reduce this value if needed */
+ 
+}
+
+
+}
+  </style>
+</head>
+<body>
+  <div class="mobile-stack">
+    <!-- KEEP REST OF YOUR ORIGINAL BODY CONTENT HERE -->
+
+  <body style="background: linear-gradient(145deg, #dfdfd1, #d4d470); min-height: 100vh; margin: 0; font-family: 'Poppins', sans-serif;">
+
+
+<!-- 🔥 Spiced Up Heading Box -->
+<div class="leads-header-stack">
+  <!-- 🔥 Heading -->
+  <div class="heading-box">
+  <img src="logo.png" alt="JK Logo" style="height: 75px; width: auto; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1) rotate(-5deg)'" onmouseout="this.style.transform='scale(1) rotate(0deg)'">
+  <h1 style="font-size: 36px; font-weight: bold; font-family: 'Poppins', sans-serif; font-weight: 600; margin: 0; color: #314de9;">JK SOLAR LEADS</h1>
+</div>
+
+<!-- 🔔 Box 3 Reminder (Top Right Floating) -->
+<!-- 🔔 Box 3 Reminder (Top Right Floating) -->
+<div class="status-boxes-row">
+<div id="reminderContainer">
+  <div id="reminderBox" class="info-box">
+
+
+    <h4 style="margin: 0 0 8px 0; font-size: 15px;">🔔 Today's Reminders</h4>
+    <div id="reminderList" style="color: #444;"></div>
+  </div>
+</div>
+
+<!-- ✅ Box 4 – Final Status Leads -->
+<div id="finalStatusBox" class="info-box">
+
+  <h4 style="margin: 0 0 10px 0; font-size: 15px;">✅ Finalized Clients</h4>
+  <div id="finalStatusList" style="color: #333;"></div>
+  </div>
+  </div>
+</div>
+<!-- 🌟 CSS Animation -->
+<style>
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+
+
+
+<div class="filter-container">
+  <!-- Filter + Search Inline Row -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; position: relative;">
+    
+    <!-- 🔍 Filter + Search -->
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <!-- Filter Icon + Dropdown -->
+     
+    <div style="position: relative;">
+     
+
+      <button onclick="toggleFilterMenu()" style="background: none; border: none; cursor: pointer;margin-top: 200px; font-size: 24px;">☰</button>
+      <div id="filterMenu" style="display:none; position: absolute; top: 35px; left: 0; background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); padding: 12px; z-index: 1000; animation: fadeDrop 0.2s ease-in-out;">
+        <button class="filter-btn" onclick="applyFilter('Proposal', 'Sent')">📩 Proposal: Sent</button>
+        <button class="filter-btn" onclick="applyFilter('Proposal', 'Pending')">⏳ Proposal: Pending</button>
+        <button class="filter-btn" onclick="applyFilter('Meeting', 'Done')">🤝 Meeting: Done</button>
+        <button class="filter-btn" onclick="applyFilter('Meeting', 'Pending')">🕒 Meeting: Pending</button>
+        <button class="filter-btn" onclick="applyFilter('Final', 'Yes')">✅ Final Status: Yes</button>
+        <button class="filter-btn" onclick="applyFilter('Final', 'No')">❌ Final Status: No</button>
+        <hr style="margin: 10px 0;">
+        <button class="filter-btn clear-btn" onclick="applyFilter('Clear')">🧹 Clear Filters</button>
+      </div>
+    </div>
+  
+      <!-- 🔎 Search Box -->
+      <input type="text" id="searchBox" placeholder="Search by name or mobile..." 
+      style="padding: 8px 14px; border-radius: 8px; border: 1px solid #ccc; width: 240px; margin-top:200px; font-size: 14px;" 
+      onkeyup="searchLeads()">
+</div>
+
+<div class="top-buttons">
+  <button onclick="openClientModal()" style="background-color: #007bff; color: white; border: none; padding: 9px 20px; border-radius: 8px; margin-top:180px; font-size: 14px; cursor: pointer;">
+    Add Client
+  </button>
+  <button onclick="window.location.href='proposal.html'"style="background-color: #007bff; color: white; border: none; padding: 9px 20px; border-radius: 8px; margin-top:180px; font-size: 14px; cursor: pointer;">Send Proposal</button>
+</div>
+
+
+<!-- Add Client Modal -->
+<div id="clientModal" class="modal">
+  <div class="modal-content">
+
+  
+    <span class="close-button" onclick="closeClientModal()">×</span>
+    <h2>Add New Lead</h2>
+    <form id="leadForm">
+      <label>Date</label>
+      <input type="text" id="date" readonly>
+
+      <label>Consumer Name</label>
+      <input type="text" id="name" required>
+
+      <label>Address</label>
+      <input type="text" id="address" required>
+
+      <label>Mobile No.</label>
+      <input type="tel" id="mobile" required>
+
+      
+
+      <label>KW</label>
+      <input type="text" id="kw">
+
+      <label>Reference</label>
+      <input type="text" id="reference">
+
+      <button type="submit">Save Lead</button>
+      
+    </form>
+  </div>
+</div>
+
+
+</div>
+
+
+  <style>
+    .filter-btn {
+      display: block;
+      background-color: #f5f5f5;
+      border: none;
+      padding: 10px 15px;
+      margin: 4px 0;
+      width: 180px;
+      text-align: left;
+      font-size: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+  
+    .filter-btn:hover {
+      background-color: #007bff;
+      color: white;
+    }
+  
+    .clear-btn {
+      background-color: #ffecec;
+      color: #d9534f;
+    }
+  
+    .clear-btn:hover {
+      background-color: #d9534f;
+      color: white;
+    }
+  
+    @keyframes fadeDrop {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  
+  </div>
+
+  
+  
+<div style="padding: 20px;">
+  <div style="max-height: 650px; overflow-x: auto; overflow-y: auto; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+
+      <table id="leadsTable" style="border-collapse: collapse; width: 100%; min-width: 800px;">
+        <thead>
+            <tr>
+              <th>Date</th>
+              <th>Consumer Name</th>
+              <th>Address</th>
+              <th>Mobile No.</th>
+              <th>Ref No.</th>
+              <th>KW</th>
+              <th>Reference</th>
+              <th>Call Status</th>
+              <th>Proposal</th>
+              <th>Meeting</th>
+              <th>Reminder</th>
+              <th>Status</th>
+              <th>Final Status</th>
+            </tr>
+          </thead>
+          
+        <tbody id="leadsBody" style="background: white;"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  const modal = document.getElementById("clientModal");
+
+  function openClientModal() {
+    modal.style.display = "flex";
+    document.getElementById("date").value = new Date().toLocaleDateString("en-GB");
+
+   
+  }
+
+  // Optional: Close modal when clicking outside
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  // Submit form handler
+  document.getElementById("leadForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const lead = {
+      date: document.getElementById("date").value,
+      name: document.getElementById("name").value,
+      address: document.getElementById("address").value,
+      mobile: document.getElementById("mobile").value,
+      kw: document.getElementById("kw").value,
+      reference: document.getElementById("reference").value,
+    };
+
+    fetch('/save-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lead)
+    }).then(res => {
+      if (res.ok) {
+        const toast = document.getElementById('leadSavedToast');
+toast.style.display = 'block';
+toast.style.animation = 'fadeInOut 2.5s ease-in-out';
+
+setTimeout(() => {
+  toast.style.display = 'none';
+}, 2500);
+
+      }
+    });
+  });
+</script>
+
+<script>
+    let pendingDeleteRow = null;
+    let pendingUpdateCell = null;
+    
+    window.onload = function () {
+      fetch('/get-leads')
+        .then(res => res.json())
+        .then(data => {
+          const body = document.getElementById('leadsBody');
+          body.innerHTML = '';
+    
+          data.slice(1).forEach((row, index) => {
+            const tr = document.createElement('tr');
+    
+            // First 7 columns (read-only)
+            row.slice(0, 7).forEach((cell, i) => {
+              const td = document.createElement('td');
+              td.textContent = cell;
+              td.style.padding = '10px';
+              td.style.borderBottom = '1px solid #ddd';
+              tr.appendChild(td);
+            });
+    
+            // Editable fields
+            const callStatus = createEditableInput('call', index, row[7]);
+            const proposal = createDropdown(['Pending', 'Sent'], 'proposal', index, row[8]);
+            const meeting = createDropdown(['Pending', 'Done'], 'meeting', index, row[9]);
+            const reminder = createEditableInput('reminder', index, row[10], 'date');
+            const status = createEditableInput('status', index, row[11]);
+            const finalStatus = createDropdown(['No', 'Yes'], 'final', index, row[12]);
+    
+            [callStatus, proposal, meeting, reminder, status, finalStatus].forEach(el => tr.appendChild(el));
+    
+            body.appendChild(tr);
+            
+          });
+          loadTodaysReminders();  // ✅ <-- THIS IS WHAT’S MISSING
+          loadFinalStatusClients();
+
+          // ✅ Setup modal button events *after* HTML is loaded
+          document.getElementById('confirmYes').onclick = function () {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            pendingUpdateCell.value = 'Yes';
+            handleChange('call', pendingDeleteRow, 'Yes', pendingUpdateCell.parentElement);
+            pendingDeleteRow = null;
+            pendingUpdateCell = null;
+          };
+    
+          document.getElementById('confirmNo').onclick = function () {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            fetch('/delete-lead', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ rowIndex })
+})
+
+          };
+        });
+    };
+    
+    function loadTodaysReminders() {
+  const today = new Date().toISOString().split('T')[0];
+  const rows = document.querySelectorAll('#leadsBody tr');
+  const reminderList = document.getElementById('reminderList');
+  reminderList.innerHTML = '';
+
+  let found = false;
+
+  rows.forEach(row => {
+    const reminderInput = row.children[10]?.querySelector('input');
+    const name = row.children[1]?.textContent.trim();
+    const status = row.children[11]?.querySelector('input')?.value || 'No status';
+
+    if (reminderInput?.value) {
+      const reminderDate = new Date(reminderInput.value);
+      const reminderString = reminderDate.toISOString().split('T')[0];
+
+      if (reminderString === today) {
+        found = true;
+        const div = document.createElement('div');
+        div.innerHTML = `📅 ${today} | <strong>${name}</strong> | Status: <strong>${status}</strong>`;
+        div.style.marginBottom = '6px';
+        reminderList.appendChild(div);
+      }
+    }
+  });
+
+  if (!found) {
+    reminderList.innerHTML = `<div style="color: #555;">No reminders for today.</div>`;
+  }
+}
+
+    function createEditableInput(field, rowIndex, value = '', type = 'text') {
+      const td = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = type;
+      input.value = value || '';
+      input.style.width = '100%';
+      input.onchange = () => handleChange(field, rowIndex, input.value, td);
+      td.appendChild(input);
+      td.style.padding = '5px';
+      return td;
+    }
+    
+    function createDropdown(options, field, rowIndex, selected = '') {
+      const td = document.createElement('td');
+      const select = document.createElement('select');
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        if (opt === selected) option.selected = true;
+        select.appendChild(option);
+      });
+      select.onchange = () => handleChange(field, rowIndex, select.value, td);
+      td.appendChild(select);
+      td.style.padding = '5px';
+      return td;
+    }
+    
+    function handleChange(field, rowIndex, value, td) {
+      if (field === 'call' && value.toLowerCase() === 'no') {
+        pendingDeleteRow = rowIndex;
+        pendingUpdateCell = td.querySelector('input');
+        document.getElementById('confirmDeleteModal').style.display = 'flex';
+        return;
+      }
+    
+      fetch('/update-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field, rowIndex, value })
+      });
+    }
+    
+
+
+document.getElementById('confirmYes').onclick = function () {
+  document.getElementById('confirmDeleteModal').style.display = 'none';
+
+  // Set value to "Yes" in Excel
+  pendingUpdateCell.value = 'Yes';
+  handleChange('call', pendingRowIndex, 'Yes', pendingUpdateCell.parentElement);
+
+  pendingDeleteRow = null;
+  pendingUpdateCell = null;
+  pendingRowIndex = null;
+};
+
+document.getElementById('confirmNo').onclick = function () {
+  document.getElementById('confirmDeleteModal').style.display = 'none';
+
+  // Delete from Excel
+  fetch('/delete-lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rowIndex: pendingRowIndex })
+  }).then(() => location.reload()); // Reload to reflect deletion
+
+  pendingDeleteRow = null;
+  pendingUpdateCell = null;
+  pendingRowIndex = null;
+};
+
+
+
+
+</script>
+
+    
+    <div id="confirmDeleteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+          <h3>Is client interested?</h3>
+          <div style="margin-top:20px;">
+            <button id="confirmYes" style="margin: 10px; padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px;">Yes</button>
+            <button id="confirmNo" style="margin: 10px; padding: 10px 20px; background-color: #dc3545; color: white; border: none; border-radius: 6px;">No</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="leadSavedToast" style="display:none; position: fixed; top: 20px; right: 20px; background-color: #28a745; color: white; padding: 12px 20px; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); z-index: 10000;">
+        ✅ Lead saved successfully!
+      </div>
+      
+      <!--filter-->
+      <script>
+        function toggleFilterMenu() {
+          const menu = document.getElementById('filterMenu');
+          menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
+        }
+        
+        function applyFilter(type, value) {
+          const rows = document.querySelectorAll('#leadsBody tr');
+        
+          rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            let show = true;
+        
+            if (type === 'Proposal' && cells[8].querySelector('select')?.value !== value) show = false;
+            if (type === 'Meeting' && cells[9].querySelector('select')?.value !== value) show = false;
+            if (type === 'Final' && cells[12].querySelector('select')?.value !== value) show = false;
+            if (type === 'Clear') show = true;
+        
+            row.style.display = show ? '' : 'none';
+          });
+        
+          document.getElementById('filterMenu').style.display = 'none'; // hide dropdown
+        }
+        </script>
+
+        <script>
+        function searchLeads() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const rows = document.querySelectorAll('#leadsBody tr');
+          
+            rows.forEach(row => {
+              const name = row.children[1]?.textContent.toLowerCase();
+              const mobile = row.children[3]?.textContent.toLowerCase();
+              if (name.includes(query) || mobile.includes(query)) {
+                row.style.display = '';
+              } else {
+                row.style.display = 'none';
+              }
+            });
+          }
+          </script>
+<script>
+function loadTodaysReminders() {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const rows = document.querySelectorAll('#leadsBody tr');
+    const reminderList = document.getElementById('reminderList');
+    reminderList.innerHTML = '';
+  
+    let found = false;
+  
+    rows.forEach(row => {
+      const reminderInput = row.children[10]?.querySelector('input'); // Reminder date
+      const name = row.children[1]?.textContent.trim();               // Consumer Name
+      const status = row.children[11]?.querySelector('input')?.value || 'No status'; // Status input
+  
+      if (reminderInput && reminderInput.value === today) {
+        found = true;
+        const div = document.createElement('div');
+        div.innerHTML = `📅 ${today} | <strong>${name}</strong> | Status: <strong>${status}</strong>`;
+        div.style.marginBottom = '6px';
+        reminderList.appendChild(div);
+      }
+    });
+  
+    if (!found) {
+      reminderList.innerHTML = `<div style="color: #555;">No reminders for today.</div>`;
+    }
+  }
+</script>  
+<script>
+  function loadFinalStatusClients() {
+  const rows = document.querySelectorAll('#leadsBody tr');
+  const finalList = document.getElementById('finalStatusList');
+  finalList.innerHTML = '';
+
+  let found = false;
+
+  rows.forEach((row, index) => {
+    const finalSelect = row.children[12]?.querySelector('select');
+    const name = row.children[1]?.textContent.trim();
+    const kw = row.children[5]?.textContent.trim();
+
+    if (finalSelect?.value === 'Yes') {
+      found = true;
+
+      const div = document.createElement('div');
+      div.innerHTML = `✅ <strong>${name}</strong> | ${kw} KW 
+      <button onclick="deleteFinal(this)" style="margin-left: 10px; padding: 2px 6px; font-size: 12px; border: none; background: #dc3545; color: white; border-radius: 5px; cursor: pointer;">Remove</button>`;
+
+      div.style.marginBottom = '6px';
+      finalList.appendChild(div);
+    }
+  });
+
+  if (!found) {
+    finalList.innerHTML = `<div style="color: #555;">No finalized leads yet.</div>`;
+  }
+}
+function deleteFinal(button) {
+  const item = button.parentElement;
+  item.remove(); // ✅ removes the row only from Box 4
+}
+
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+<script>function closeClientModal() {
+  document.getElementById("clientModal").style.display = "none";
+}
+</script>
+</body>
+</html>

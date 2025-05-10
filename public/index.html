@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRM Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    header {
+  background-color: #0b5394;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+
+.header-logo {
+  width: 60px;
+  margin-right: 15px;
+}
+
+.header-title {
+  font-size: 24px;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+}
+
+
+    img.logo {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      color: #221b1b;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 30px auto;
+}
+
+.button-group a button {
+  background-color: #ffffff;
+  border: none;
+  padding: 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: #333;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.button-group a button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.button-card {
+  height: 150px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  font-size: 18px;
+  color: #222;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  text-align: center;
+}
+
+.button-card:hover {
+  transform: translateY(-5px);
+}
+
+.button-card .icon {
+  width: 70px;
+  height: 70px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+    .form-container, .search-container {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+      display: none;
+    }
+
+
+
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+
+    button.submit-btn {
+      margin-top: 20px;
+      background-color: #2ecc71;
+    }
+
+    button.submit-btn:hover {
+      background-color: #27ae60;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    #continueButton {
+      display: none;
+      margin-top: 15px;
+      background-color: #f39c12;
+    }
+
+    @media (max-width: 1240px) {
+  header {
+    flex-direction: column;
+    padding: 10px 15px;         /* 🍽️ reduce top-bottom space */
+    height: auto;               /* Let it shrink naturally */
+  }
+
+  
+
+  .header-title {
+    font-size: 28px;
+  }
+  
+  img.logo {
+      width: 100px;
+      margin-bottom: 0px;
+    }
+}
+
+
+    
+ 
+   
+
+/* Modal base styling */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.5s ease; /* Smooth fade animation */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  width: 300px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  animation: slideIn 0.4s ease;
+}
+
+/* Password Heading */
+.modal-content h2 {
+  margin-bottom: 20px; /* 🔥 Add gap below the heading */
+  font-size: 22px;
+}
+
+/* Input box */
+#passwordInput {
+  padding: 10px;
+  width: 90%;
+  border: 1px solid gray;
+  border-radius: 6px;
+  margin-bottom: 10px; /* 🔥 Reduced from 20px to 10px */
+}
+
+
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes slideIn {
+  from {transform: scale(0.8);}
+  to {transform: scale(1);}
+}
+
+/* Buttons styling */
+.submit-btn {
+  background-color: green;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: darkgreen;
+}
+
+.cancel-btn {
+  background-color: red;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: darkred;
+}
+
+
+/* Shake animation keyframes */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+/* Shake class */
+.shake {
+  animation: shake 0.3s ease;
+}
+
+  #leadsPasswordModal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .leads-modal-box {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    animation: popUp 0.3s ease-out;
+  }
+
+  .leads-modal-box h2 {
+    margin-bottom: 20px;
+    color: #222;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .leads-modal-box input[type="password"] {
+    padding: 12px;
+    width: 90%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+
+  .leads-modal-box button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin: 5px;
+  }
+
+  .leads-modal-box button:first-of-type {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .leads-modal-box button:first-of-type:hover {
+    background-color: #218838;
+  }
+
+  .leads-modal-box button:last-of-type {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .leads-modal-box button:last-of-type:hover {
+    background-color: #c82333;
+  }
+
+  @keyframes popUp {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+  </style>
+</head>
+<body>
+<header>
+  <!-- Logo -->
+  <img src="/logo.png" alt="JK Solar Logo" class="logo" />
+  <div class="header-title">JK SOLAR CRM </div>
+</header>
+
+
+  <!-- Buttons -->
+  <div class="button-group">
+    
+    <div class="button-card" style="background-color: #a5d6a7;" onclick="location.href='addClient.html'">
+      <img src="addclientimg.png" class="icon" alt="Add Client Icon">
+      <span>Add Client</span>
+    </div>
+
+    <div class="button-card" style="background-color: #edeea8;" onclick="location.href='search-bar.html'">
+      <img src="searchimg.png" class="icon" alt="Search Client Icon">
+      <span style="font-size: 18px;">Search Client</span>
+    </div>
+    
+    <div class="button-card" style="background-color: #fad264;" onclick="location.href='stock.html'">
+      <img src="stockimg.png" class="icon" alt="Stock Sheet Icon">
+      <span style="font-size: 18px;">Stock Sheet</span>
+    </div>
+    
+    <button onclick="showLeadsPassword()" class="button-card" style="
+  background-color: #9ce9e9;
+  width: 150px;
+  height: 150px;
+  border: none;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  font-size: 16px;
+  color: #222;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+">
+  <img src="leadsimg.png" class="icon" style="width: 100px; height: 80px; margin-bottom: 0px;" alt="Leads Icon">
+  <span style="font-size: 18px;">Leads</span>
+</button>
+
+<button onclick="location.href='proposal.html'" class="button-card" style="
+background-color: #fdc6fd;
+width: 150px;
+height: 150px;
+border: none;
+border-radius: 20px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+font-weight: bold;
+font-size: 16px;
+color: #222;
+cursor: pointer;
+transition: transform 0.3s ease;
+">
+<img src="proposalimg.png" class="icon" style="width: 90px; height: 90px; margin-bottom: 14px;" alt="Proposal Icon">
+<span style="font-size: 18px;">Proposal</span>
+</button>
+
+
+<button id="solarDashboardBtn" onclick="showPasswordModal()" class="button-card" style="
+background-color: #c3c8f7;
+width: 150px;
+height: 150px;
+border: none;
+border-radius: 20px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+font-weight: bold;
+font-size: 16px;
+color: #222;
+cursor: pointer;
+transition: transform 0.3s ease;
+">
+<img src="dashimg.png" class="icon" style="width: 150px; height: 140px;margin-top: -20px; margin-bottom: -10px;" alt="Dashboard Icon">
+<span style="font-size: 18px;">Dashboard</span>
+</button>
+
+
+  </div>
+
+  
+
+<!-- Password Modal -->
+<div id="passwordModal" class="modal">
+  <div class="modal-content" id="modalBox">
+    <h2>🔒 Enter Password</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password"><br><br>
+    
+    <!-- 🔥 Error Message -->
+    <p id="errorMessage" style="color:red; font-weight:bold; display:none; margin-bottom:10px;">❌ Wrong password. Please try again.</p>
+
+    <button onclick="checkPassword()" class="submit-btn">Submit</button>
+    <br><br>
+    <button onclick="closePasswordModal()" class="cancel-btn">Cancel</button>
+  </div>
+</div>
+
+
+
+
+<!--Password-->
+<script>
+// Open modal when green button clicked
+document.getElementById('solarDashboardBtn').addEventListener('click', function() {
+  const modal = document.getElementById('passwordModal');
+  modal.style.display = 'flex';
+
+  // Autofocus on input box after opening modal
+  setTimeout(() => {
+    document.getElementById('passwordInput').focus();
+  }, 100);
+
+  // Clear previous error messages and input
+  document.getElementById('errorMessage').style.display = 'none';
+  document.getElementById('passwordInput').value = '';
+});
+
+// Check password function
+function checkPassword() {
+  const enteredPassword = document.getElementById('passwordInput').value;
+  const errorMessage = document.getElementById('errorMessage');
+  const modalBox = document.getElementById('modalBox');
+
+  // ✅ Set your correct password here
+  const correctPassword = "jj"; // <--- Replace with your real password
+
+  if (enteredPassword === correctPassword) {
+    // 🔥 Password correct — Show Access Granted message
+    modalBox.innerHTML = `
+      <h2 style="color:green; font-size:24px;">✅ Access Granted!</h2>
+      <p style="margin-top: 10px;">Redirecting to Dashboard...</p>
+    `;
+
+    // Redirect after 1.5 seconds
+    setTimeout(() => {
+      window.location.href = 'dashboard.html'; // Change if needed
+    }, 1500);
+
+  } else {
+    // ❌ Password wrong — Show error and shake
+    errorMessage.style.display = 'block';
+
+    // Shake effect
+    modalBox.classList.add('shake');
+    setTimeout(() => {
+      modalBox.classList.remove('shake');
+    }, 300);
+  }
+}
+
+
+// Close modal manually
+function closePasswordModal() {
+  document.getElementById('passwordModal').style.display = 'none';
+}
+
+// Close modal by clicking outside
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('passwordModal');
+  const modalBox = document.getElementById('modalBox');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+
+</script>
+
+
+  <!-- Search Client Form -->
+  <div class="search-container" id="searchForm">
+    <label>Enter Client Name:</label>
+    <input type="text" id="searchInput" placeholder="Enter client name...">
+    <button class="submit-btn" onclick="searchClient(event)">Search</button>
+    <div class="result" id="searchResult"></div>
+    <button id="continueButton" class="submit-btn" onclick="goToTimeline()">Continue</button>
+  </div>
+
+  <script>
+    function showSearchForm() {
+      document.getElementById('searchForm').style.display = 'block';
+    }
+  
+    function searchClient(event) {
+      event.preventDefault(); // Prevent the form from submitting
+  
+      const name = document.getElementById('searchInput').value.trim();
+      const resultBox = document.getElementById('searchResult');
+      const continueButton = document.getElementById('continueButton');
+  
+      if (!name) {
+        resultBox.textContent = "Please enter a client name.";
+        resultBox.style.color = "red";
+        continueButton.style.display = 'none';
+        return;
+      }
+  
+      fetch(`/search-client?name=${encodeURIComponent(name)}`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`Server responded with status ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data.found) {
+            resultBox.textContent = `✅ Client "${name}" found.`;
+            resultBox.style.color = "green";
+            continueButton.style.display = 'inline'; // Show continue button
+          } else {
+            resultBox.textContent = `❌ Client "${name}" not found.`;
+            resultBox.style.color = "red";
+            continueButton.style.display = 'none'; // Hide continue button if not found
+          }
+        })
+        .catch(err => {
+          console.error("Fetch error:", err);
+          resultBox.textContent = "🚫 Error searching client.";
+          resultBox.style.color = "red";
+          continueButton.style.display = 'none';
+        });
+    }
+  
+    function goToTimeline() {
+      const clientName = document.getElementById('searchInput').value.trim();
+      if (!clientName) {
+        alert("Please enter a client name");
+        return;
+      }
+  
+      // ✅ Save the client name in localStorage
+      localStorage.setItem("clientName", clientName);
+  
+      // ✅ Redirect to timeline.html (client-side page)
+      window.location.href = "timeline.html";
+    }
+  </script>
+<!-- FIX: Removed duplicate 'display:none' and corrected it -->
+
+ <!--Leads password-->
+<div id="leadsPasswordModal">
+  <div class="leads-modal-box">
+    <h2><span>🔒</span> Enter Password</h2>
+    <input type="password" id="leadsPasswordInput" placeholder="Enter Password" />
+    <br>
+    <button onclick="validateLeadsPassword()">Submit</button>
+    <button onclick="hideLeadsPassword()">Cancel</button>
+  </div>
+</div>
+
+<script>
+  function showLeadsPassword() {
+    document.getElementById('leadsPasswordModal').style.display = 'flex';
+  }
+
+  function hideLeadsPassword() {
+    document.getElementById('leadsPasswordModal').style.display = 'none';
+  }
+
+  function validateLeadsPassword() {
+    const input = document.getElementById('leadsPasswordInput').value;
+    if (input === "jj") { // 🔒 Set your real password here
+      window.location.href = "leads.html";
+    } else {
+      const toast = document.getElementById('wrongPasswordToast');
+toast.style.display = 'block';
+toast.style.animation = 'fadeInOut 2s ease-in-out';
+
+setTimeout(() => {
+  toast.style.display = 'none';
+}, 2000);
+
+    }
+  }
+  
+</script>
+
+<!--wrong password lead-->
+ <div id="wrongPasswordToast" style="display: none; position: fixed; top: 20px; right: 20px; background-color: #dc3545; color: white; padding: 12px 20px; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); z-index: 10000; animation: fadeInOut 2s ease-in-out;">
+  ❌ Wrong password. Try again!
+</div>
+<script>
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+      window.location.reload(); // 👈 reloads the page if coming back from browser history
+    }
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+
+</body>
+</html>

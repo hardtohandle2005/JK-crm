@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+<meta charset="utf-8"/>
+<title>JK SOLAR PROPOSAL</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #000;
+      background: #bed0e6;
+    }
+    .container {
+      max-width: 960px;
+      margin: 50px auto;
+      background: #ffffff;
+      padding: 50px 40px 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+    }
+    .button-bar {
+  position: sticky;
+  top: 0;
+  background: #001f3f; /* darker navy */
+  padding: 10px 20px;
+  text-align: right;
+  z-index: 1000;
+  border-bottom: 3px solid #005cbf;
+}
+
+    .button-bar button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      background: #ffcc00;
+      color: #000;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .page-header {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 0px;
+  color: rgb(80, 76, 76);
+  border-radius: 12px 12px 0 0;
+}
+.page-header-1 {
+  text-align: center;
+  padding: 20px 0;
+  color: rgb(80, 76, 76);
+  border-radius: 12px 12px 0 0;
+}
+    .page-header img.logo {
+      height: 60px;
+    }
+    .page-header h1 {
+  font-family: 'Georgia', serif;
+  font-size: 30px;
+  color: #696161;
+  margin: 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.page-header-1 img.logo {
+      height: 60px;
+    }
+    .tagline {
+      background-color: #00cc00;
+      color: white;
+      font-weight: bold;
+      padding: 10px;
+      font-size: 18px;
+    }
+    .banner {
+  width: 100%;
+  height: 400px;
+  display: block;
+  margin: 20px 0;
+}
+
+    .section-title {
+      font-size: 20px;
+      font-style: italic;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+    .highlight {
+      font-style: italic;
+      font-weight: bold;
+      color: #003366;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #706d6d;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+    #pdfContent {
+  width: 794px; /* A4 width at 96 DPI */
+  min-height: 1123px; /* A4 height at 96 DPI */
+  margin: 0 auto;
+  padding: 0;
+  background: white;
+}
+
+.containe {
+  width: 794px;
+  height: 1123px;
+  page-break-after: always;
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 40px 40px 40px;
+  box-sizing: border-box;
+  background: white;
+}
+
+
+    .containe.page-1 {
+  padding-top: 0;
+  margin-top: -10px;
+}
+.page-break {
+  page-break-before: always;
+  break-before: page;
+}
+
+
+    .containe:last-child {
+      page-break-after: auto;
+    }
+
+    table {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
+}
+tr, td, th {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.bom {
+  padding-top: 0px !important;
+  margin-top: 50px;
+}
+
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 12px;
+      background: #fdfefe;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    table thead {
+      background: #004488;
+      color: white;
+    }
+    table th, table td {
+      padding: 12px 15px;
+      border: 1px solid #c5d1e0;
+      font-size: 15px;
+      vertical-align: top;
+    }
+    table tbody tr:nth-child(even) {
+      background: #f3f6fc;
+    }
+    ul { padding-left: 20px; }
+    ul li { margin-bottom: 8px; font-size: 15px; }
+    p { line-height: 1.6; }
+    .note { font-size: 13px; color: #333; margin-top: 10px; }
+    .centered { text-align: center; }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+<div class="button-bar">
+<button onclick="downloadPDF()">Download PDF</button>
+<button onclick="sendWhatsApp()">Send via WhatsApp</button>
+</div>
+
+<div id="pdfContent">
+  <div class="containe page-1">
+  
+<div class="page-header-1">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+<div class="tagline">We Make Solar Simple and Smarter !</div>
+<img alt="Inspiring Green Technology" class="banner" src="img.jpg"/>
+<p style="text-align: right; margin-top: 10px; font-style: italic;"><strong>Dated:</strong> <span id="date"></span></p>
+<p style="font-size: 18px; font-style: italic; text-align: center; color: #003366; text-decoration: underline; font-weight: bold;">
+      Proposal For <span id="kw"></span> KW Grid Connected Solar PV System
+    </p>
+<p style="text-align: left; font-style: italic;">
+      To<br/>
+<span style="font-weight: bold;"> <span id="toWhom"></span></span><br/>
+<span style="font-style: normal;">Mob. No. <span id="mobile"></span></span></br>
+<span style="font-style: normal;">Address: <span id="address"></span></span><br/>
+
+
+</p>
+</div>
+<div style="height: 60px;"></div>
+<div class="footer">
+<strong>JK Solar Pvt. Ltd.</strong><br/>
+    Near Sector 10 A Chowk, Kadipur Ind. area<br/>
+    Pataudi ROAD, GURGAON -122001 (HARYANA)<br/>
+    M: +91 9911244410, +91 9909677773<br/>
+    Email: jksolargurugram@gmail.com<br/>
+    Visit us: www.jksolarpower.com
+  </div>
+</div>
+<div class="container">
+<div class="page-header">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+</div>
+<div class="section">
+<p class="highlight">Scope of work</p>
+<ul>
+<li><strong>Complete</strong> Solar Power Plant system design &amp; engineering.</li>
+<li>Supply of components (<em>SPV modules, Solar Mounting structure, Inverters and other necessary items like cables, distribution panels with switchgear, earthing Lightning Arrestor etc.</em>)</li>
+<li>Civil work, plant erection and installation.</li>
+<li>Testing &amp; commissioning of the <em>Solar plant</em>.</li>
+<li><em>Liasioning</em> of DHBVN Solar Net meter and subsidy Documentation.</li>
+<li>Five years warranty of Solar Power Plant.</li>
+</ul>
+<p style="font-weight: bold; text-decoration: underline; margin-top: 20px;">
+        Cost of the <span id="plantKw">...</span> Kw Grid Connected Solar Power Plant
+      </p>
+<table>
+<tr><th>Capacity</th><th><span id="capacityKw">...</span> Kw</th></tr>
+<tr>
+<td>
+            Cost of the <span id="inlineKw">...</span> Kw Solar Roof Top Power Plant (Material cost, Designing, Engineering, Installation &amp; Commissioning)
+          </td>
+<td><span id="plantPrice">...</span></td>
+</tr>
+</table>
+<p style="color: #336699; font-weight: bold; font-size: 14px; margin-top: 5px;">
+        * Including GST And Net Metering.
+      </p>
+</div>
+<div class="section">
+<p class="highlight">Financial benefits:</p>
+<table>
+<tr><th>Units Generations Per Annum</th><td id="units"></td></tr>
+<tr><th>Saving Per Annum ( Unit@Rs 8 )</th><td id="savingYear"></td></tr>
+<tr><th>Saving Per Month ( Saving p.a./12)</th><td id="savingMonth"></td></tr>
+<tr><th>Investment Payback Period In Year</th><td id="payback"></td></tr>
+<tr><th>Investment Rate of return in percentage</th><td id="roi"></td></tr>
+<tr><th>Minimum south face shadow free Area required</th><td id="area"></td></tr>
+</table>
+<p class="note">
+<strong>Note:</strong> Above financial calculation is based on assumptions, solar power generation is purely based on weather, cleaning of module and power cut of electricity because solar power plant can’t run in the absence of grid.
+    </p>
+</div>
+<!-- PAGE 2: Engagement Terms -->
+
+<div class="container">
+<div class="page-header">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+</div>
+<div class="section-title">Engagement Terms:</div>
+<p><strong>Payment Terms:</strong></p>
+<ul>
+<li>The above price is inclusive of installation and commissioning. 30% advance at the time of signed purchase agreement, 60% after the DHBVN approval and installation of Solar Structure, Civil work and Earthing, 10% on commissioning of the plant.</li>
+<li>The price quoted above is for standard system. The maximum height will be Solar Power Plant 2000mm, for elevated structure will be charged extra as actual.</li>
+<li>Freight is included in the cost of the system.</li>
+<li>Civil work like grouting of columns is include in this cost.</li>
+<li>O&amp;M contract will be separate and charged extra.</li>
+</ul>
+<p><strong>Warranty:</strong> All components including PV modules shall be supplied &amp; installed as per the quality standards, according to guidelines of MNRE, Govt. of India, wherever applicable. Modules performance warranty will be as:</p>
+<ul>
+<li>90% Peak output warranty for first 12 years</li>
+<li>80% Peak power warranty for next 30 years</li>
+<li>Product warranty against manufacturing defects for modules 10 years.</li>
+<li>8 years warranty on Inverter against manufacturing defects</li>
+</ul>
+<p><strong>Project Timeline &amp; Conditions:</strong> Project will be completed within 30 days from date of placement of order along with the advance payment. This offer is valid for 30 days from date hereof. Standard force majeure conditions apply for this offer and resultant order.</p>
+<p><strong>Conditions:</strong></p>
+<ul>
+<li>Water arrangement and Electricity supply during installation of project is under scope of Customer.</li>
+<li>Providing safe warehouse during project installation period is under scope of Customer.</li>
+<li>Customer will authorize JK Solar and its concerned project staff for all time easy access to the plant for its smooth operation and maintenance.</li>
+<li>Shadow free space and access to roof shall be provided by customer. Our engineer will visit your site and help you to identify suitable installation area.</li>
+<li>Routine weekly cleaning of panel to avoid dust deposition shall be carried out by customer in appropriate manner.</li>
+<li>The proposed PV System will be supplied and installed by JK Solar Pvt. Ltd.</li>
+</ul>
+</div>
+
+<!-- PAGE 3: BOM -->
+<div class="bom">
+<div class="page-header">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+</div>
+<div class="section-title">BOM of <span id="bomKw">...</span> Kw</div>
+<table>
+<thead>
+<tr>
+<th>Material</th><th>Specifications</th><th><span id="bomKwCol">...</span> KW</th><th>Make</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solar module</td>
+<td>Mono Perc <span id="bomWp">...</span> wp half cut Bifacial N Type Cells with minimum 23% efficiency</td>
+<td><span id="bomPanelQty">...</span></td>
+<td><span id="bomBrand">...</span></td></tr>
+<td>Grid inverter</td>
+<td>String inverter <span id="bomKwText">...</span> Kw or as per system design with a minimum efficiency of 98%</td>
+<td>01</td>
+<td><span id="bomInverter">...</span></td>
+
+<tr><td>Module structure</td>
+<td>Galvanised Iron</td>
+<td>01</td><td>JSW / Apollo</td></tr>
+<tr><td>ACDB</td>
+<td>Input AC MCB, Surge Protection Device</td>
+<td>As per Requirement</td>
+<td>MCB: L&amp;T<br/>SPD: Phoenix</td></tr>
+<tr><td>DCDB</td><td>Inpurt DC Issolator, Surge Protection Device</td><td>As per Requirement</td><td>Isolator: Merson<br/>SPD: Phoenix</td></tr>
+<tr><td>DC Wire</td><td>Polycab 4 sq mm DC tin coated Solar Wire</td><td>As per Requirement</td><td>Polycab</td></tr>
+<tr><td>AC wire ACDB to Inverter</td><td>KEI 6 sqmm copper</td><td>As per Requirement</td><td>KEI</td></tr>
+<tr><td>AC supply wire</td><td>16 mm XLPE alluminium Non armed supply wire</td><td>As per Requirement</td><td>KEI/Ecko</td></tr>
+<tr><td>Earthing</td><td>3 mtr copper Bonded Chemical Earthing</td><td>03</td><td>Standard</td></tr>
+<tr><td>LA</td><td>1200x25mm copper conventional LA</td><td>01</td><td>Standard</td></tr>
+<tr><td>Misc.</td><td>MC4 connectors, Thimble and lugs, Earthing copper wire 6 sq mm</td><td>As per requirement</td><td>Standard</td></tr>
+</tbody>
+</table>
+<p class="note">• All system components will be as per MNRE guidelines.</p>
+</div>
+</div>
+<!-- PAGE 4: Design Description -->
+
+<div class="container">
+<div class="page-header">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+</div>
+<div class="section-title">Typical Design Description</div>
+<p>
+      The Photovoltaic (PV) Grid-connected Power Plant consists mainly of 3 components: PV array, Module Mounting Structure and the Power Conditioning Unit (PCU). The PV array converts the sunlight in to direct current (DC) power. The Module mounting structure is used to hold the module in position. The DC power is converted to alternating current (AC) power by the PCU.
+    </p>
+<p>
+      AC energy is then combined to LT panel and synchronized with the grid and power is exported to the grid or can be used for captive load. The Generation from solar power plant is totally dependent on weather conditions of the site and cleaning of PV modules. Based on the year’s average solar isolation data of a selected site the expected energy generation can be estimated per annum.
+    </p>
+<img alt="On Grid System" src="img2.jpg" style="width: 80%; margin-top: 20px;margin-left: 70px;  border-radius: 8px;"/>
+</div>
+
+<!-- PAGE 5: Scope of Services -->
+
+<div class="container">
+<div class="page-header">
+<img class="logo" src="logo.png"/>
+<h1>JK SOLAR PVT LTD</h1>
+</div>
+<div class="section-title">Scope of Services</div>
+<ol>
+<li><strong>Project Design: Location and Feasibility Study</strong><br/>In order to make sure the right size of the system, site analysis is of paramount importance. Critical points including geographic location, topography, and distance from grid need to be considered as they have a huge impact on the system performance.</li>
+<li><strong>Preparation: System Sizing</strong><br/>System sizing is done after detailed study in order to freeze the specifications of the BOS including PV modules, inverter, battery and charge controller and other system components. Demand profiling is carried out to do the PV and Battery sizing. We select only high quality components which ensure the lowest life time cost of the system.</li>
+<li><strong>Contracting: Erection and Commissioning</strong><br/>Our trained engineers ensure timely and successful erection and commissioning of the project. Where ever required our team can also assist in optimizing operations of the plant and attaining maximum operational efficiencies.</li>
+<li><strong>Implementation: Project Management</strong><br/>A disciplined, organized and a well managed approach of our highly skilled and motivated team ensures successful completion of the projects well within timelines.</li>
+<li><strong>Commissioning: Operations &amp; Maintenance</strong><br/>In order to ensure zero downtime we also carry out O&amp;M for the projects we install. Our highly trained workforce ensures high</li>
+<li><strong>Training: Training &amp; Documentation</strong><br/>A complete knowledge driven training session will be undertaken for better understanding of the operation &amp; maintenance of the system. Project Documentation will be provided for the entire plant system components, troubleshooting and other operations for the smooth running of the plant.</li>
+<li><strong>AMC:</strong> For trouble free operation of the plants/installations, we offer annual maintenance contracts (AMC) to our customers.</li>
+</ol>
+<p class="highlight" style="text-align:center; font-size: 18px; margin-top: 30px;">
+      Need more clarity?<br/><span style="color:#666; font-style: normal;">Getting connected is the first step to getting started !</span>
+</p>
+<p><strong>Contact:</strong><br/>Muninder Pal ( Technical and sales Manager )<br/>Mob. No. 9911244410</p>
+</div>
+
+
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+  
+    if (ref) {
+      fetch(`/get-proposal?ref=${ref}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("kw")?.textContent = data.KW;
+          document.getElementById("toWhom")?.textContent = data.To;
+          document.getElementById("mobile")?.textContent = data.Mobile;
+          document.getElementById("price")?.textContent = parseFloat(data.Price).toLocaleString("en-IN");
+          document.getElementById("refNo")?.textContent = data.Ref;
+          document.getElementById("plantKw")?.textContent = data.KW;
+          document.getElementById("capacityKw")?.textContent = `${data.KW} Kw`;
+          document.getElementById("inlineKw")?.textContent = data.KW;
+          document.getElementById("plantPrice")?.textContent = parseFloat(data.Price).toLocaleString("en-IN");
+          const units = 1400 * parseFloat(data.KW);
+          const savingYear = units * 8;
+          const savingMonth = Math.round(savingYear / 12);
+          const payback = parseFloat(data.Price / savingYear).toFixed(2);
+          const roi = parseFloat(100 / payback).toFixed(0);
+          const area = Math.round(parseFloat(data.KW) * 60);
+          const panelQty = Math.ceil((data.KW * 1000) / parseFloat(data.WP));
+          document.getElementById("units")?.textContent = units;
+          document.getElementById("savingYear")?.textContent = savingYear;
+          document.getElementById("savingMonth")?.textContent = savingMonth;
+          document.getElementById("payback")?.textContent = payback;
+          document.getElementById("roi")?.textContent = roi;
+          document.getElementById("area")?.textContent = area;
+          document.getElementById("bomKw")?.textContent = data.KW;
+          document.getElementById("bomKwCol")?.textContent = `${data.KW} Kw`;
+          document.getElementById("bomKwText")?.textContent = data.KW;
+          document.getElementById("bomWp")?.textContent = data.WP;
+          document.getElementById("bomPanelQty")?.textContent = panelQty;
+          document.getElementById("bomBrand")?.textContent = data.PanelBrand;
+          document.getElementById("bomInverter")?.textContent = data.InverterBrand;
+          document.getElementById("date")?.textContent = data.Date;
+        })
+        .catch(err => console.error("Fetch error:", err));
+    }
+  </script>
+  
+  <script>
+    async function loadProposalData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      if (!ref) return alert("❌ Reference number missing in URL");
+  
+      try {
+        const res = await fetch(`/get-proposal?ref=${ref}`);
+        const result = await res.json();
+        if (!result.success) return alert('⚠️ Proposal not found!');
+  
+        const d = result.data;
+        document.getElementById('date').innerText = d.date || '';
+        document.getElementById('toWhom').innerText = d.towhom || '';
+        document.getElementById('mobile').innerText = d.mobile || '';
+        document.getElementById('address').innerText = d.address || '';
+        document.getElementById('kw').innerText = d.kw || '';
+        document.getElementById('plantKw').innerText = d.kw || '';
+        document.getElementById('capacityKw').innerText = d.kw || '';
+        document.getElementById('inlineKw').innerText = d.kw || '';
+        document.getElementById('plantPrice').innerText = d.price ? `₹ ${d.price}` : '';
+  
+        const kw = parseFloat(d.kw);
+        const price = parseFloat(d.price);
+        const units = Math.round(kw * 1400);
+        const savingYear = units * 8;
+        const savingMonth = Math.round(savingYear / 12);
+        const payback = price && savingYear ? (price / savingYear).toFixed(1) : 0;
+        const roi = payback ? (100 / payback).toFixed(1) : 0;
+        const area = Math.round(kw * 60);
+        const wp = parseFloat(d.panelwp);
+        const panelQty = wp ? Math.round((kw * 1000) / wp) : 0;
+  
+        document.getElementById('units').innerText = `₹ ${units}`;
+        document.getElementById('savingYear').innerText = `₹ ${savingYear}`;
+        document.getElementById('savingMonth').innerText = `₹ ${savingMonth}`;
+        document.getElementById('payback').innerText = payback;
+        document.getElementById('roi').innerText = roi + '%';
+        document.getElementById('area').innerText = area + ' sq.ft';
+  
+        document.getElementById('bomKw').innerText = kw;
+        document.getElementById('bomKwText').innerText = kw;
+        document.getElementById('bomKwCol').innerText = kw;
+        document.getElementById('bomWp').innerText = d.panelwp;
+        document.getElementById('bomPanelQty').innerText = panelQty;
+        document.getElementById('bomBrand').innerText = d.panelbrand;
+        document.getElementById('bomInverter').innerText = d.inverterbrand;
+  
+      } catch (err) {
+        console.error('❌ Failed to load proposal:', err);
+        alert('Error loading proposal data');
+      }
+    }
+  
+    
+  
+  
+  
+ function downloadPDF() {
+  const element = document.getElementById('pdfContent');
+  const buttonBar = document.querySelector('.button-bar');
+  buttonBar.style.display = 'none';
+
+  const opt = {
+  margin: 0,
+  filename: 'JK_Solar_Proposal.pdf',
+  image: { type: 'jpeg', quality: 1 },
+  html2canvas: { scale: 2 , useCORS: true},
+  jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+};
+
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    buttonBar.style.display = 'block';
+  });
+}
+window.onload = loadProposalData;
+ </script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</div>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+
+</body>
+</html>

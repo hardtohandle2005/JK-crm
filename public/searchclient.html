@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Client - JK Solar CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f2f2f2;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: 0 auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 25px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 25px;
+    }
+
+    .back-link a {
+      color: #2980b9;
+      text-decoration: none;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: red;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .continue-btn {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <body>
+    <h1>Search Client</h1>
+  
+    <div class="form-container">
+      <form id="searchForm" action="/search-client" method="GET">
+        <label>Enter Client Name:</label>
+        <input type="text" name="clientName" id="clientName" required>
+        <button type="submit">Search</button>
+      </form>
+    </div>
+  
+    <div class="back-link">
+      <a href="/index.html">← Back to Dashboard</a>
+    </div>
+  
+    <div class="error-message" id="errorMessage" style="display: none;">
+      Client not found in the upload folder. Please make sure the client exists.
+    </div>
+  
+    <div class="continue-btn" id="continueBtn" style="display: none;">
+      <button onclick="goToTimeline()">Continue to Timeline</button>
+    </div>
+  
+    <script>
+      // Store the selected client name in localStorage
+      function setClientName(name) {
+        localStorage.setItem('clientName', name);
+      }
+    
+      const searchForm = document.getElementById('searchForm');
+      const errorMessage = document.getElementById('errorMessage');
+      const continueBtn = document.getElementById('continueBtn');
+    
+      // Search form submission handling
+      searchForm.onsubmit = async (e) => {
+        e.preventDefault();
+    
+        const clientName = document.getElementById('clientName').value;
+    
+        try {
+          const response = await fetch(`/search-client?clientName=${clientName}`);
+          const data = await response.json();
+    
+          if (data.found) {
+            // If client found, show "Continue" button and store client name
+            errorMessage.style.display = 'none';
+            continueBtn.style.display = 'block';
+    
+            // Set the client name in localStorage
+            setClientName(clientName);
+          } else {
+            // If client not found, show error message
+            errorMessage.style.display = 'block';
+            continueBtn.style.display = 'none';
+          }
+        } catch (error) {
+          console.error('Error fetching client data:', error);
+        }
+      };
+    
+      // When "Continue" button is clicked, navigate to the timeline page
+      function goToTimeline() {
+        const clientName = localStorage.getItem('clientName');
+        if (clientName) {
+          window.location.href = `timeline.html?clientName=${encodeURIComponent(clientName)}`;
+        } else {
+          alert("Client name missing!");
+        }
+      }
+    
+      // Attach event to the "Continue" button
+      continueBtn.onclick = goToTimeline;
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(() => console.log('✅ Service Worker Registered'))
+          .catch((error) => console.warn('❌ SW registration failed:', error));
+      }
+    </script>
+    
+</body>
+
+</html>

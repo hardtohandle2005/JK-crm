@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#004aad">
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JK Solar CRM - Final Upgraded Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+body { display: flex; height: 100vh; background: linear-gradient(120deg, #e0f7fa, #f1f8e9); overflow: hidden; }
+
+/* Sidebar */
+#sidebar { 
+  background: #004aad; 
+  width: 30px; 
+  transition: width 0.3s; 
+  overflow: hidden; 
+  color: white; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  padding: 10px 0; 
+  height: 100vh;
+}
+#sidebar.open { width: 200px; }
+#toggleBtn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-bottom: 30px; }
+.sidebar-item { margin: 20px 0; white-space: nowrap; opacity: 0; transition: opacity 0.3s; }
+#sidebar.open .sidebar-item { opacity: 1; }
+
+/* Main Content */
+#main { flex: 1; display: flex; flex-direction: row; height: 100%; }
+
+/* Center Area (Graphs Section) */
+#centerArea { 
+  flex: 2; 
+  background: rgba(255,255,255,0.6); 
+  backdrop-filter: blur(10px); 
+  margin: 20px; 
+  border-radius: 20px; 
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 24px; 
+  color: #555; 
+}
+
+/* Right Panel (Tasks, Reminders, Stats) */
+#rightPanel { 
+  width: 400px; 
+  margin: 20px 20px 20px 0; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+}
+
+/* Stats Boxes */
+#statsBoxes {
+  display: flex; 
+  gap: 20px; 
+  justify-content: center; 
+  margin-bottom: 20px;
+}
+.stat-box {
+  flex: 1;
+  min-width: 180px; /* Updated smaller size */
+  max-width: 200px;
+  height: 100px; /* Updated smaller height */
+  background: #90caf9; /* Darker blue for Sales Revenue */
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+/* Box Hover Effect */
+.stat-box:hover {
+  transform: translateY(-5px);
+}
+
+.stat-box:nth-child(1) {
+  background: #90caf9; /* Darker blue for Sales Revenue */
+}
+.stat-box:nth-child(2) {
+  background: #ffcc80; /* Darker orange for Payment */
+}
+.stat-box:nth-child(3) {
+  background: #a5d6a7; /* Darker green for Plants Installed */
+}
+
+.stat-box h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.stat-box h2 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Cards (Tasks, Reminders) */
+.card {
+  background: rgba(255,255,255,0.7); 
+  backdrop-filter: blur(10px); 
+  border-radius: 15px; 
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15); 
+  padding: 20px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px); 
+  box-shadow: 0 10px 24px rgba(0,0,0,0.2);
+}
+
+h4 {
+  font-size: 20px; 
+  color: #333;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 columns */
+  gap: 5px;
+  font-size: 12px; /* smaller font */
+  padding: 5px; /* less padding */
+}
+
+.calendar-grid div {
+  background: #ffffff;
+  border-radius: 6px;
+  text-align: center;
+  padding: 6px 4px; /* less padding */
+  font-weight: bold;
+  font-size: 12px;
+}
+
+
+.calendar-cell { 
+  background: white; 
+  border-radius: 10px; 
+  text-align: center; 
+  padding: 10px; 
+  cursor: pointer; 
+  transition: 0.3s; 
+}
+
+.calendar-cell:hover, .calendar-cell.active { 
+  background: #c8e6c9; 
+}
+
+/* Input, Select and Buttons */
+input, select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+/* Task and Reminder Items */
+.task-item, .reminder-item {
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: white;
+  margin-top: 5px;
+}
+
+.button-add {
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  background: #004aad;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button-add:hover {
+  background: #003080;
+}
+#statsBoxes {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 05px;
+  margin-top: 50px;
+  margin-left: 10px;
+}
+
+/* Stats Boxes */
+#statsBoxes {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  flex: 1;
+  min-width: 180px; 
+  max-width: 200px;
+  height: 100px; 
+  background: #42a5f5; /* Corrected: Darker Blue for Sales Revenue */
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+/* Box Hover Effect */
+.stat-box:hover {
+  transform: translateY(-5px);
+}
+
+.stat-box:nth-child(1) {
+  background: #42a5f5; /* Darker Blue */
+}
+.stat-box:nth-child(2) {
+  background: #ff7043; /* Darker Orange */
+}
+.stat-box:nth-child(3) {
+  background: #66bb6a; /* Darker Green */
+}
+
+/* Titles (h3) */
+.stat-box h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Values (h2) */
+.stat-box h2 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Background Color Update */
+body {
+  background: linear-gradient(10deg, #c5e8ec, #cbe2cc); /* Background updated to a deeper shade */
+}
+
+.payments-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+.payments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.search-filter {
+  display: flex;
+  gap: 10px;
+}
+
+.search-filter input,
+.search-filter select,
+.search-filter button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+  #paymentsTable tbody tr:hover {
+    background-color: #d0e9ff; /* Light blue shade on hover */
+    cursor: pointer; /* Show pointer cursor */
+  }
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  #paymentsTable {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  #paymentsTable th, #paymentsTable td {
+    border-bottom: 1px solid #c8e8ec; /* Light horizontal lines */
+    border-right: 1px solid #dcedf1;  /* Light vertical lines */
+    padding: 10px;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  #paymentsTable th:last-child, #paymentsTable td:last-child {
+    border-right: none; /* No right border on last column */
+  }
+
+  #paymentsTable thead {
+    background-color: #f5f5f5;
+  }
+  
+  #finalStatusBox {
+  width: 100%;
+  max-width: 370px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px;
+  margin: 10px auto;
+  font-family: 'Poppins', sans-serif;
+  animation: fadeInUp 0.3s ease-out;
+  font-size: 14.2px;
+  color: #333;
+  line-height: 1.5;
+}
+#finalStatusBox h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#finalStatusBox span {
+  display: inline-block;
+  font-size: 13.8px;
+  margin-bottom: 8px;
+  color: #444;
+  line-height: 1.4;
+}
+#finalStatusBox span strong {
+  font-weight: 500;
+  color: #000;
+}
+#finalStatusBox button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-left: 8px;
+}
+
+#notesBox {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  margin-top: 20px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.note-card {
+  background-color: #f6f6f6;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.note-card button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+@media (max-width: 800px) {
+  #root {
+    flex-direction: column !important;
+  }
+
+  #mainContent {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #navbar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 16px;
+    gap: 8px;
+    height: auto !important;     
+    width: 100%;
+    max-width: 95vw;
+    box-sizing: border-box;
+  }
+
+  #navbar img {
+    height: 40px !important;
+    margin: 0 !important;
+  }
+
+  #navbar h1 {
+    font-size: 18px !important;
+    margin: 0 !important;
+  }
+
+  #statsBoxes {
+    flex-direction: row !important;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0 6px;
+    margin-left: -20px;
+    margin-top: 10px;
+    order: 1;
+  }
+
+  .stat-box {
+    flex: 1 1 31%;
+    max-width: 12%;
+    min-width: 80px;
+    padding: 6px 4px !important;
+    font-size: 9.5px !important;
+    text-align: center;
+    border-radius: 6px;
+    height: 70px;
+  }
+
+  .stat-box h3 {
+    font-size: 10px !important;
+    margin-bottom: 3px;
+  }
+
+  .stat-box h2 {
+    font-size: 12px !important;
+  }
+
+ /* 👇 This moves centerArea below stats and above payments */
+ #centerArea {
+    order: 2;
+    width: 100%;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #centerArea > div:first-child {
+    flex-direction: column !important;
+    width: 100%;
+    align-items: center !important;
+  }
+
+  .chart-container {
+    width: 90% !important;
+    max-width: 320px;
+    height: auto !important;
+    margin-bottom: 20px;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  #dashboardContent {
+    order: 3;
+    width: 100%;
+  }
+
+  #rightPanel {
+    order: 4;
+    width: 100%;
+    padding: 10px;
+    min-width: unset !important;
+  }
+  .table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#paymentsTable {
+  width: max-content;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+#paymentsTable th,
+#paymentsTable td {
+  font-size: 11px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+  #paymentsPage {
+  width: 10%;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+}
+
+
+
+
+</style>
+
+</head>
+<body>
+ 
+  
+  <div id="root" style="display: flex;">
+
+
+<div id="mainContent" style="flex: 1; display: flex; flex-direction: column;">
+  
+  <div id="navbar" style="width: 100%; background: white; display: flex; align-items: center; padding: 10px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);margin-left: 10px; margin-top: 20px; border-radius: 0 0 12px 12px;">
+    <img src="./logo.png" alt="Logo" style="height: 60px; width: auto; margin-right: 20px;">
+    <h1 style="font-size: 38px;margin-left: 25px; font-weight: 700; color: #1565c0; font-family: 'Poppins', sans-serif;">JK SOLAR PVT LTD</h1>
+  </div>
+
+<div id="statsBoxes" style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;">
+  <div class="stat-box" style="flex:1; background: #e3f2fd; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h3 style="color: #1565c0;">Total Sales Revenue</h3>
+    <h2 id="salesRevenue">₹0</h2>
+</div>
+  <div class="stat-box" style="flex:1; background: #fff3e0; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h3 style="color: #ef6c00;">Total Payment Received</h3>
+    <h2 id="paymentReceived">₹0</h2>
+  </div>
+
+  <div class="stat-box" style="flex:1; background: #e8f5e9; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h3 style="color: #2e7d32;">Plants Installed</h3>
+    <h2 id="plantsInstalled">0</h2>
+  </div>
+</div>
+
+
+  <div id="dashboardContent" style="display: flex; gap: 20px; margin: 20px; margin-left: 30px; margin-top: 6px; align-items: flex-start;">
+    <div id="dashboardWrapper">
+    <div id="paymentsPage"  class="fade-in" style="flex: 1; min-width: 500px; height: 650px; display: flex; flex-direction: column; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px;">
+     
+      <!-- Payments Heading and Filter -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Payments</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input id="searchPayments" type="text" placeholder="Search Customer..." style="padding: 6px 10px; border-radius: 8px; border: 1px solid #ccc; width: 100px;">
+            <select id="filterPayments" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #ccc; width:100px;">
+            <option value="due">Due</option>
+            <option value="secondDue">2nd Install. Due</option>
+            <option value="finalDue">Final Install. Due</option>
+          </select>
+          <button style="padding: 6px 12px; background-color: #4caf50; color: white; border: none; border-radius: 8px;">Request Payment</button>
+        </div>
+      </div>
+    
+      <!-- Payments Table with Scroll -->
+      <div class="table-wrapper">
+        <table id="paymentsTable" style="width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden;">
+          <thead>
+            <tr style="background-color: #f5f5f5;">
+              <th style="padding: 8px; font-size: 13px;">Customer Name</th>
+              <th style="padding: 8px; font-size: 13px;">Total Cost</th>
+              <th style="padding: 8px; font-size: 13px;">Advance</th>
+              <th style="padding: 8px; font-size: 13px;">2nd Install.</th>
+              <th style="padding: 8px; font-size: 13px;">Final Install.</th>
+              <th style="padding: 8px; font-size: 13px;">Balance</th>
+            </tr>
+          </thead>
+          
+          <tbody id="paymentsTableBody">
+            <!-- Dynamic Data Rows -->
+          </tbody>
+        </table>
+      </div>
+    
+    </div>
+
+    </div>
+
+    
+  </div>
+</div>
+  
+<div id="centerArea" class="fade-in" style="flex: 2; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+  
+  <!-- Top Row: Two Pie Charts Side by Side -->
+  <div style="display: flex; justify-content: center; gap: 20px; width: 100%;">
+    <div class="chart-container" style="flex: 1; min-width: 300px; height: 300px; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 20px; box-shadow: 0 8px 20px rgba(66,165,245,0.3);">
+      <canvas id="pieChart"></canvas>
+    </div>
+
+    <div class="chart-container" style="flex: 1; min-width: 300px; height: 300px; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 20px; box-shadow: 0 8px 20px rgba(66,165,245,0.3);">
+      <canvas id="applicationPieChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Second Row: Full Width Bar Graph -->
+  <div style="width: 95%; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 20px; box-shadow: 0 8px 20px rgba(66,165,245,0.3);">
+    <canvas id="barGraph" style="height: 400px;"></canvas>
+  </div>
+</div>
+</div>
+</div>
+
+<div id="rightPanel" class="fade-in" style="flex: 0.1; min-width: 360px; display: flex; flex-direction: column; gap: 20px; padding: 10px;">
+  <div class="card">
+    <h4>Calendar</h4>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+  <div id="finalStatusBox" class="info-box">
+    <h4 style="margin: 0 0 10px 0; font-size: 15px;">✅ Finalized Clients</h4>
+    <div id="finalStatusList" style="color: #333;"></div>
+  </div>
+  <div class="info-box" id="notesBox">
+    <h4 style="font-size: 16px;">📝 Notepad</h4>
+    <div id="notesList" style="margin-bottom: 12px;"></div>
+    <input id="noteInput" type="text" placeholder="Write a note..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" />
+    <button onclick="addNote()" style="margin-top: 8px; padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">Add Note</button>
+  </div>
+  
+  
+  
+</div>
+</div>
+
+<div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 40px); gap: 4px; margin-bottom: 20px;"></div>
+
+
+
+<input type="date" id="taskDate">
+<input type="time" id="taskTime">
+<input type="text" id="taskDesc" placeholder="Task Description">
+<button onclick="addTask()">Add Task</button>
+<div id="taskList"></div>
+
+<input type="date" id="reminderDate">
+<input type="text" id="reminderText" placeholder="Reminder Text">
+<button onclick="addReminder()">Add Reminder</button>
+<div id="reminderList"></div>
+
+<!-- ✅ LITEPICKER CALENDAR -->
+<script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
+<script>
+const pickerTask = new Litepicker({ element: document.getElementById('taskDate'), singleMode: true, format: 'DD-MM-YYYY' });
+const pickerReminder = new Litepicker({ element: document.getElementById('reminderDate'), singleMode: true, format: 'DD-MM-YYYY' });
+
+const calendarGrid = document.getElementById('calendarGrid');
+const today = new Date();
+const currentDate = today.getDate();
+const currentMonth = today.getMonth() + 1;
+const currentYear = today.getFullYear();
+let selectedDate = currentDate;
+
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+days.forEach(day => {
+  const cell = document.createElement('div');
+  cell.className = 'calendar-cell';
+  cell.style.fontWeight = 'bold';
+  cell.style.background = '#d7eaf3';
+  cell.innerText = day;
+  calendarGrid.appendChild(cell);
+});
+
+for (let i = 1; i <= 31; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'calendar-cell';
+  cell.innerText = i;
+  if (i === currentDate) cell.classList.add('active');
+  cell.onclick = () => selectDate(i);
+  calendarGrid.appendChild(cell);
+}
+
+function selectDate(day) {
+  selectedDate = day;
+  document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('active'));
+  calendarGrid.children[day + 6].classList.add('active');
+  loadAllTasksAndReminders().then(() => loadTasksAndReminders());
+}
+
+
+</script>
+
+
+  <script>
+// ✨ Animate number counting
+function animateCounter(id, start, end, duration = 1000) {
+  const element = document.getElementById(id);
+  const range = end - start;
+  const minTimer = 50;
+  const steps = Math.ceil(duration / minTimer);
+  const stepSize = range / steps;
+  let current = start;
+  let stepCount = 0;
+
+  const timer = setInterval(() => {
+    current += stepSize;
+    stepCount++;
+
+    if (stepCount >= steps) {
+      current = end;
+      clearInterval(timer);
+    }
+
+    if (id === 'plantsInstalled') {
+      element.innerText = Math.floor(current);
+    } else {
+      element.innerText = `₹${Math.floor(current).toLocaleString('en-IN')}`;
+    }
+  }, minTimer);
+}
+
+async function fetchDashboardStats() {
+  try {
+    const response = await fetch('/api/getDashboardStats', { cache: "no-store" });
+    const data = await response.json();
+
+    // 🌟 Animate from old value to new value
+    const salesRevenueElement = document.getElementById('salesRevenue');
+    const paymentReceivedElement = document.getElementById('paymentReceived');
+    const plantsInstalledElement = document.getElementById('plantsInstalled');
+
+    const currentSales = parseInt(salesRevenueElement.innerText.replace(/[₹,]/g, '')) || 0;
+    const currentPayment = parseInt(paymentReceivedElement.innerText.replace(/[₹,]/g, '')) || 0;
+    const currentPlants = parseInt(plantsInstalledElement.innerText) || 0;
+
+    animateCounter('salesRevenue', currentSales, data.totalSalesRevenue);
+    animateCounter('paymentReceived', currentPayment, data.totalPaymentReceived);
+    animateCounter('plantsInstalled', currentPlants, data.plantsInstalled);
+
+  } catch (error) {
+    console.error('❌ Error loading stats:', error);
+  }
+}
+</script>
+
+    
+    
+      <!-- at the very bottom of your page -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+ async function fetchPieData() {
+  try {
+    const res = await fetch('/api/getPieData', { cache: "no-store" });
+    const { totalAmount, totalBalance } = await res.json();
+
+    const ctx = document.getElementById('pieChart').getContext('2d');
+
+    if (window.pieChartInstance) {
+      window.pieChartInstance.destroy();
+    }
+
+    window.pieChartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Total Revenue', 'Balance'],
+        datasets: [{
+          data: [totalAmount, totalBalance],
+          backgroundColor: ['#42a5f5', '#ff7043']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 1000,
+          easing: 'easeOutBounce'
+        },
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('❌ Error fetching pie data:', err);
+  }
+}
+
+
+  // make sure stats and pie load after DOM
+  window.addEventListener('DOMContentLoaded', () => {
+    fetchDashboardStats();  // your existing stats fetch
+    fetchPieData();
+    fetchApplicationStatusData();
+    fetchBarGraphData();
+  });
+  setInterval(() => {
+    console.log('🔄 Refreshing dashboard stats and pie...');
+    fetchDashboardStats();
+    fetchPieData();
+    fetchApplicationStatusData();
+    fetchBarGraphData();
+  }, 60000); // 60000 milliseconds = 1 minute
+</script>
+<script>
+  async function fetchApplicationStatusData() {
+  try {
+    const res = await fetch('/api/getApplicationStatusData', { cache: "no-store" });
+    const { applied, pending } = await res.json();
+
+    const ctx2 = document.getElementById('applicationPieChart').getContext('2d');
+
+    if (window.applicationPieChartInstance) {
+      window.applicationPieChartInstance.destroy();
+    }
+
+    window.applicationPieChartInstance = new Chart(ctx2, {
+      type: 'pie',
+      data: {
+        labels: ['Application Applied', 'Application Pending'],
+        datasets: [{
+          data: [applied, pending],
+          backgroundColor: ['#66bb6a', '#ef5350']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 1000,
+          easing: 'easeOutBounce'
+        },
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('❌ Error fetching application status data:', err);
+  }
+}
+
+  </script>
+  <script>
+    async function fetchBarGraphData() {
+  try {
+    const res = await fetch('/api/getBarGraphData', { cache: "no-store" });
+    const {
+      totalCostSum,
+      advanceSum,
+      secondInstallmentReceivedSum,
+      secondInstallmentDue,
+      finalInstallmentReceivedSum,
+      finalInstallmentDue
+    } = await res.json();
+
+    const ctx = document.getElementById('barGraph').getContext('2d');
+
+    if (window.barGraphInstance) {
+      window.barGraphInstance.destroy();
+    }
+
+    window.barGraphInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [
+          'Total Amount', 'Advance Received', 
+          '', 
+          '2nd Installment Received', '2nd Installment Due',
+          '', 
+          'Final Installment Received', 'Final Installment Due'
+        ],
+        datasets: [{
+          label: 'Payment Status',
+          data: [
+            totalCostSum, advanceSum,
+            null, 
+            secondInstallmentReceivedSum, secondInstallmentDue,
+            null, 
+            finalInstallmentReceivedSum, finalInstallmentDue
+          ],
+          backgroundColor: [
+          '#388f3c', // Dark Green (Total Amount)
+  '#81c784', // Light Green (Advance Received)
+  '',        // Gap
+  '#fbc02d', // Dark Yellow (2nd Installment Received)
+  '#fff176', // Light Yellow (2nd Installment Due)
+  '',        // Gap
+  '#7b1fa2', // Dark Purple (Final Installment Received)
+  '#ba68c8'  // Light Purple (Final Installment Due)
+          ],
+          borderRadius: 8,
+          barThickness: 30
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#333' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#eee' },
+            ticks: { color: '#333' }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeOutBounce'
+        }
+      }
+    });
+  } catch (err) {
+    console.error('❌ Error fetching bar graph data:', err);
+  }
+}
+
+    </script>
+    
+    <script>
+      async function loadPaymentsData() {
+        try {
+          const res = await fetch('/api/getPaymentsData', { cache: "no-store" });
+          const { payments } = await res.json();
+          window.allPayments = payments;
+          renderPaymentsTable(payments);
+        } catch (error) {
+          console.error('❌ Error loading payments:', error);
+        }
+      }
+      
+      function renderPaymentsTable(data) {
+        const tbody = document.getElementById('paymentsTableBody');
+        tbody.innerHTML = '';
+      
+        data.forEach(payment => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="padding: 12px;">${payment.customerName}</td>
+            <td style="padding: 12px;">₹${payment.totalCost.toLocaleString('en-IN')}</td>
+            <td style="padding: 12px;">₹${payment.advance.toLocaleString('en-IN')}</td>
+            <td style="padding: 12px;">${payment.secondInstallment === 'Due' ? '<span style="color: red;">Due</span>' : '₹' + parseFloat(payment.secondInstallment).toLocaleString('en-IN')}</td>
+            <td style="padding: 12px;">${payment.finalInstallment === 'Due' ? '<span style="color: red;">Due</span>' : '₹' + parseFloat(payment.finalInstallment).toLocaleString('en-IN')}</td>
+            <td style="padding: 12px;">₹${payment.balance.toLocaleString('en-IN')}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+      
+      document.getElementById('searchPayments').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        const filtered = window.allPayments.filter(p => p.customerName.toLowerCase().includes(search));
+        renderPaymentsTable(filtered);
+      });
+      
+      document.getElementById('filterPayments').addEventListener('change', function() {
+        const value = this.value;
+        let filtered = [];
+      
+        if (value === 'due') {
+          filtered = window.allPayments;
+        } else if (value === 'secondDue') {
+          filtered = window.allPayments.filter(p => p.secondInstallment === 'Due');
+        } else if (value === 'finalDue') {
+          filtered = window.allPayments.filter(p => p.finalInstallment === 'Due');
+        }
+      
+        renderPaymentsTable(filtered);
+      });
+      
+      // Load Payments when page loads
+      loadPaymentsData();
+      
+      </script>
+       <!-- TASKS Scripts -->
+  <script>
+    async function loadTasks() {
+      const res = await fetch('/api/getTasks');
+      const data = await res.json();
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+
+      data.tasks.forEach(task => {
+        const div = document.createElement('div');
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+        div.style.alignItems = "center";
+        div.style.padding = "8px";
+        div.style.borderBottom = "1px solid #eee";
+        div.innerHTML = `
+  <span>${task.time} : ${task.desc}</span>
+  <button onclick="deleteTask('${task.date}', '${task.time}', '${task.desc}')" style="background: none; border: none; color: red; cursor: pointer;">🗑️</button>
+`;
+
+        taskList.appendChild(div);
+      });
+    }
+
+    async function addReminder() {
+  const rawDate = document.getElementById('reminderDate').value;
+  const date = formatToDDMMYYYY(rawDate);  // ✅ formatted
+  const text = document.getElementById('reminderText').value;
+
+  if (!date || !text) {
+    alert('Please fill all reminder fields!');
+    return;
+  }
+
+  await fetch('/api/addReminder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, text })
+  });
+
+  document.getElementById('reminderDate').value = '';
+  document.getElementById('reminderText').value = '';
+
+  await loadAllTasksAndReminders();
+  loadTasksAndReminders();
+}
+
+async function deleteTask(date, time, desc) {
+  await fetch('/api/deleteTask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, time, description: desc })
+  });
+  loadAllTasksAndReminders(); // Reload updated tasks
+}
+
+  </script>
+
+  
+  
+<script>
+  function filterTasksByDate(dateToShow) {
+  const taskList = document.getElementById('taskList');
+  taskList.innerHTML = '';
+
+  const filteredTasks = tasks.filter(task => task.date === dateToShow);
+
+  if (filteredTasks.length === 0) {
+    taskList.innerHTML = '<div style="padding: 10px;">No tasks for this day.</div>';
+    return;
+  }
+
+  filteredTasks.forEach(task => {
+    const div = document.createElement('div');
+    div.style.display = "flex";
+    div.style.justifyContent = "space-between";
+    div.style.alignItems = "center";
+    div.style.padding = "8px";
+    div.style.borderBottom = "1px solid #eee";
+    div.innerHTML = `
+      <span>${task.date} - ${task.time} : ${task.description}</span>
+      <button onclick="deleteTask('${task.date}', '${task.time}', '${task.description}')" style="background: none; border: none; color: red; cursor: pointer;">🗑️</button>
+    `;
+    taskList.appendChild(div);
+  });
+}
+</script>
+
+ 
+            <!-- At the very bottom before closing </body> -->
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+
+<script>
+function loadFinalStatusClients() {
+  fetch('/get-leads')
+    .then(res => res.json())
+    .then(data => {
+      const finalList = document.getElementById('finalStatusList');
+      finalList.innerHTML = '';
+      let found = false;
+
+      data.slice(1).forEach((row, index) => {
+        const finalStatus = row[12];
+        const name = row[1];
+        const kw = row[5];
+
+        if (finalStatus === 'Yes') {
+          found = true;
+          const div = document.createElement('div');
+          div.innerHTML = `✅ <strong>${name}</strong> | ${kw} KW 
+            <button onclick="this.parentElement.remove()" style="margin-left: 10px; padding: 2px 6px; font-size: 12px; border: none; background: #dc3545; color: white; border-radius: 5px; cursor: pointer;">Remove</button>`;
+          div.style.marginBottom = '6px';
+          finalList.appendChild(div);
+        }
+      });
+
+      if (!found) {
+        finalList.innerHTML = `<div style="color: #555;">No finalized leads yet.</div>`;
+      }
+    });
+}
+
+
+
+
+</script>
+
+<script>
+function loadNotes() {
+  fetch('/api/getNotes')
+    .then(res => res.json())
+    .then(data => {
+      const notesList = document.getElementById('notesList');
+      notesList.innerHTML = '';
+
+      if (!data.notes || data.notes.length === 0) {
+        notesList.innerHTML = '<div style="color: #777;">No notes yet.</div>';
+        return;
+      }
+
+      data.notes.forEach((note, index) => {
+        const div = document.createElement('div');
+        div.className = 'note-card';
+        div.innerHTML = `
+          <span>${note}</span>
+          <button onclick="deleteNote(${index})">Delete</button>
+        `;
+        notesList.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching notes:', err);
+    });
+}
+
+function addNote() {
+  const input = document.getElementById('noteInput');
+  const note = input.value.trim();
+  if (!note) return;
+
+  fetch('/api/addNote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ note })
+  }).then(() => {
+    input.value = '';
+    loadNotes();
+  });
+}
+
+function deleteNote(index) {
+  fetch('/api/deleteNote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index })
+  }).then(() => {
+    loadNotes();
+  });
+}
+
+
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const centerArea = document.getElementById('centerArea');
+    const dashboardContent = document.getElementById('dashboardContent');
+    const mainContent = document.getElementById('mainContent');
+
+    if (window.innerWidth <= 800 && centerArea && dashboardContent && mainContent) {
+      // ❗ centerArea is not in mainContent — move it into it now
+      mainContent.insertBefore(centerArea, dashboardContent);
+    }
+
+    // Load other features
+    loadNotes();
+    loadFinalStatusClients();
+    loadAllTasksAndReminders().then(() => {
+      const today = new Date().getDate();
+      selectDate(today);
+      loadTasksAndReminders();
+    });
+  });
+</script>
+
+  
+
+
+
+</body>
+</html>

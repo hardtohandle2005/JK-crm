@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8">
+  <title>Stock Sheet - JK Solar CRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #f9fcff, #dcefff);
+      min-height: 100vh;
+    }
+
+    .logo {
+      text-align: center;
+      padding: 30px 20px 10px;
+    }
+    .logo img {
+      height: 70px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #004aad;
+      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px auto;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 14px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    .in-btn { background-color: #27ae60; color: #fff; }
+    .in-btn:hover { background-color: #1f8a4d; }
+    .out-btn { background-color: #e67e22; color: #fff; }
+    .out-btn:hover { background-color: #d35400; }
+    .search-btn { background-color: #2980b9; color: white; }
+    .search-btn:hover { background-color: #1c5c89; }
+
+    .form-section {
+      max-width: 280px;
+      margin: 0 auto 40px;
+      background: linear-gradient(145deg, #ffffff, #f0f5ff);
+      padding: 35px 30px;
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 8px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #ffffff;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+      transition: border 0.2s ease-in-out;
+    }
+
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    .submit-btn {
+      margin-top: 30px;
+      width: 100%;
+      background-color: #3498db;
+      color: #fff;
+      font-size: 17px;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #217dbb;
+    }
+
+    p.success {
+      color: green;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="logo">
+  <img src="logo.png" alt="JK Solar Logo">
+</div>
+<h1>Stock Sheet</h1>
+
+<div class="button-group">
+  <button class="in-btn" onclick="toggleForm('in')">Stock In</button>
+  <button class="out-btn" onclick="toggleForm('out')">Stock Out</button>
+  <button class="search-btn" onclick="window.location.href='searchStock.html'">Search Stock</button>
+</div>
+
+<!-- Stock In Form -->
+<div id="stockInForm" class="form-section">
+  <form id="formIn">
+    <label>Date:</label>
+    <input type="date" name="date" required id="stockInDate">
+
+    <label>Material:</label>
+    <input type="text" name="material" required>
+
+    <label>Invoice No.:</label>
+    <input type="text" name="invoice" required>
+
+    <label>Quantity:</label>
+    <input type="number" name="quantity" required>
+
+    <button type="submit" class="submit-btn">Submit Stock In</button>
+    <p id="stockInSuccessMsg" class="success" style="display: none;">Submitted successfully!</p>
+  </form>
+</div>
+
+<!-- Stock Out Form -->
+<div id="stockOutForm" class="form-section">
+  <form id="formOut">
+    <label>Date:</label>
+    <input type="date" name="date" required id="stockOutDate">
+
+    <label>Material:</label>
+    <input type="text" name="material" required>
+
+    <label>Quantity:</label>
+    <input type="number" name="quantity" required>
+
+    <label>Remarks:</label>
+    <input type="text" name="remarks">
+
+    <button type="submit" class="submit-btn">Submit Stock Out</button>
+    <p id="stockOutSuccessMsg" class="success" style="display: none;">Submitted successfully!</p>
+  </form>
+</div>
+
+<script>
+  const toggleForm = (type) => {
+    document.getElementById("stockInForm").style.display = type === "in" ? "block" : "none";
+    document.getElementById("stockOutForm").style.display = type === "out" ? "block" : "none";
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("stockInDate").value = today;
+    document.getElementById("stockOutDate").value = today;
+  };
+
+  document.getElementById("formIn").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('/submit-stock-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const message = await res.text();
+      alert(message);
+      this.reset();
+      document.getElementById('stockInSuccessMsg').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('stockInSuccessMsg').style.display = 'none';
+      }, 3000);
+    } catch (err) {
+      alert("Failed to submit stock in data");
+      console.error(err);
+    }
+  });
+
+  document.getElementById("formOut").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('/submit-stock-out', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const message = await res.text();
+      alert(message);
+      this.reset();
+      document.getElementById('stockOutSuccessMsg').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('stockOutSuccessMsg').style.display = 'none';
+      }, 3000);
+    } catch (err) {
+      alert("Failed to submit stock out data");
+      console.error(err);
+    }
+  });
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch((error) => console.warn('❌ SW registration failed:', error));
+  }
+</script>
+
+</body>
+</html>

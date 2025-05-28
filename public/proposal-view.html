@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Proposal View</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #edf5ca);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 40px 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 24px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .option-btn {
+      display: block;
+      width: 280px;
+      margin: 15px auto;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      background: #ffca28;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .option-btn:hover {
+      background: #93eafa;
+      transform: scale(1.03);
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Select Proposal Format</h1>
+    <button class="option-btn" onclick="window.location.href='proposal.html'">📱 Proposal Via. Mobile</button>
+    <button class="option-btn" onclick="window.location.href='proposal-desktop.html'">💻 Proposal Via. Desktop</button>
+  </div>
+<script src="protect.js"></script>
+
+</body>
+</html>

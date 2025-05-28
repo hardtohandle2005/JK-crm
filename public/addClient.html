@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Client - JK Solar CRM</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <meta name="theme-color" content="#004aad">
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #f2f2f2, #e9f0ff);
+      margin: 0;
+      padding: 30px 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #004aad;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .form-container {
+      background-color: #ffffff;
+      padding: 30px 25px;
+      border-radius: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.08);
+      transition: all 0.3s ease-in-out;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button[type="submit"] {
+      margin-top: 30px;
+      padding: 14px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .back-link a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .form-container {
+        padding: 20px;
+      }
+      input[type="text"],
+      input[type="email"],
+      input[type="file"] {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-top: -40px; padding: 20px 0 10px;">
+    <img src="logo.png" alt="JK Solar Logo" style="height: 70px;" />
+  </div>
+  
+  <h1>Add New Client</h1>
+
+  <div class="form-container">
+    <form action="/submit-client" method="POST" enctype="multipart/form-data">
+      <label>Date:</label>
+      <input type="text" name="date" readonly>
+
+      <label>Name:</label>
+      <input type="text" name="name" required>
+
+      <label>Address:</label>
+      <input type="text" name="address" required>
+
+      <label>Mobile Number:</label>
+      <input type="text" name="mobile" required>
+
+      <label>Email ID:</label>
+      <input type="email" name="email" required>
+
+      <label>KW:</label>
+      <input type="text" name="kw" required>
+
+      <label>Advance:</label>
+      <input type="text" name="advance" required>
+
+      <label>Total Cost:</label>
+      <input type="text" name="totalCost" required>
+
+      <label>Aadhar Front:</label>
+      <input type="file" name="aadharFront"  onchange="previewImage(this, 'previewAadharFront')" required/>
+      <img id="previewAadharFront" style="max-width: 150px; margin-top: 10px; display: none;" />
+      
+      <label>Aadhar Back:</label>
+      <input type="file" name="aadharBack" onchange="previewImage(this, 'previewAadharBack')" required/>
+      <img id="previewAadharBack" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>PAN Card:</label>
+      <input type="file" name="panCard" onchange="previewImage(this, 'previewPanCard')" required/>
+      <img id="previewPanCard" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>Electricity Bill:</label>
+      <input type="file" name="bill" onchange="previewImage(this, 'previewElect')" required/>
+      <img id="previewElect" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>Ownership Proof:</label>
+      <input type="file" name="ownershipProof" onchange="previewImage(this, 'previewProof')" required/>
+      <img id="previewProof" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>Cancel Cheque:</label>
+      <input type="file" name="cancelCheque" onchange="previewImage(this, 'previewCancel')" required/>
+      <img id="previewCancel" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>Purchase Agreement:</label>
+      <input type="file" name="purchaseAgreement" onchange="previewImage(this, 'previewPurchase')" required/>
+      <img id="previewPurchase" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <label>Net Metering Agreement:</label>
+      <input type="file" name="netMeteringAgreement" onchange="previewImage(this, 'previewNetMetering')" required/>
+      <img id="previewNetMetering" style="max-width: 150px; margin-top: 10px; display: none;" />
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div class="back-link">
+    <a href="/index.html">← Back to Dashboard</a>
+  </div>
+
+  <script>
+    document.querySelector('[name="date"]').value = new Date().toLocaleDateString();
+  </script>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function (e) {
+    const requiredFileFields = [
+      'aadhaarFront',
+      'aadhaarBack',
+      'panCard',
+      'electricityBill',
+      'netMetering',
+      'purchaseBill',
+      'cancelCheque'
+    ];
+
+    let allFilesPresent = true;
+
+    requiredFileFields.forEach(id => {
+      const fileInput = document.getElementById(id);
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        allFilesPresent = false;
+        fileInput.style.border = '2px solid red'; // highlight missing field
+      } else {
+        fileInput.style.border = ''; // reset if filled
+      }
+    });
+
+    if (!allFilesPresent) {
+      e.preventDefault();
+      alert('Please upload all required documents before submitting.');
+    }
+  });
+</script>
+<script>
+  function previewImage(input, previewId) {
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.src = '';
+      preview.style.display = 'none';
+    }
+  }
+
+  // ✅ Show message only when all fields are filled
+  document.querySelector('form').addEventListener('submit', function (e) {
+    const requiredFileFields = [
+      'aadharFront', 'aadharBack', 'panCard', 'bill',
+      'ownershipProof', 'cancelCheque', 'purchaseAgreement', 'netMeteringAgreement'
+    ];
+
+    let allFilesPresent = true;
+    requiredFileFields.forEach(name => {
+      const input = document.querySelector(`input[name="${name}"]`);
+      if (!input || !input.files || input.files.length === 0) {
+        allFilesPresent = false;
+        input.style.border = '2px solid red';
+      } else {
+        input.style.border = '';
+      }
+    });
+
+    if (allFilesPresent) {
+      const existing = document.getElementById('sendingMessage');
+      if (!existing) {
+        const message = document.createElement('div');
+        message.id = 'sendingMessage';
+        message.textContent = '📤 Sending files, Please Wait...';
+        message.style.marginTop = '15px';
+        message.style.fontWeight = '600';
+        message.style.color = 'green';
+        document.querySelector('.form-container').appendChild(message);
+      }
+    } else {
+      e.preventDefault();
+      alert('Please upload all required documents before submitting.');
+    }
+  });
+</script>
+<script src="protect.js"></script>
+
+</body>
+</html>

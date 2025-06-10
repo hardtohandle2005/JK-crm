@@ -5,8 +5,6 @@ const qs = require('qs');
 const path = require('path');
 const ExcelJS = require('exceljs');
 require('dotenv').config();
-const fs = require('fs');           
-
 
 const app = express();
 const port = 3000;
@@ -15,50 +13,11 @@ app.use(fileUpload());
 
 
 const puppeteer = require('puppeteer');
-app.use(express.json());
 
-async function generatePdfFromHtml(htmlContent) {
-  const browser = await puppeteer.launch({
-    headless: 'new', // For newer versions of Puppeteer
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-
-  await browser.close();
-  return pdfBuffer;
-}
-
-
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
-});
-
+app.use(express.static('public')); // serves HTML/CSS/JS
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const session = require('express-session');
-const bcrypt = require('bcryptjs');
-
-const otpStore = new Map(); // email => { otp, expiresAt }
-const crypto = require('crypto');
-
-global.tempAccessRequests = global.tempAccessRequests || {};
-
-
-
-app.use(session({
-  secret: 'jk-solar-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 3600000, // 1 hour
-    secure: false    // true only if using HTTPS
-  }
-}));
 
 // 📂 OneDrive Setup – no local paths needed
 
@@ -88,16 +47,20 @@ const fieldNameToFileName = {
   bill: 'bill',
   ownershipProof: 'ownershipproof',
   cancelCheque: 'cancelcheque',
+  purchaseAgreement: 'purchaseagreement',
+  netMeteringAgreement: 'netmeteringagreement',
   clientPhoto: 'clientphoto'
 };
+
 
 
 app.post('/submit-client', async (req, res) => {
   try {
     const data = req.body;
     const files = req.files;
-    const clientName = `${data.name}-${data.kw}-${data.mobile}`.trim().toLowerCase().replace(/\s+/g, '_');
+    const clientName = data.name.trim().toLowerCase().replace(/\s+/g, '_');
 
+    // 🖼️ Upload client photo (base64)
     if (data.photoData) {
       const base64Match = data.photoData.match(/^data:image\/(\w+);base64,(.+)$/);
       if (base64Match) {
@@ -114,29 +77,25 @@ app.post('/submit-client', async (req, res) => {
       }
     }
 
-    console.log('📦 Sending files, please wait...');
+    // 📤 Upload document files (Aadhar, PAN, etc.) — parallel with logs
     const uploadTasks = Object.entries(files).map(async ([field, fileObj]) => {
       const file = fileObj[0] || fileObj;
       const ext = path.extname(file.name);
       const customName = `${field.toLowerCase()}${ext}`;
+
       await uploadToOneDriveFolder(clientName, field, file.data, customName);
 
       const pretty = field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
       console.log(`📤 ${pretty} uploaded...`);
     });
 
-        await Promise.all(uploadTasks);
+    await Promise.all(uploadTasks);
 
+    // 📄 Prepare client data with OneDrive paths
     const client = {
       date: data.date,
       name: data.name,
-      so: data.so,
-      houseNo: data.houseNo,
-      location: data.location,
-      landmark: data.landmark,
-      district: data.district,
-      state: data.state,
-      pin: data.pin,
+      address: data.address,
       mobile: data.mobile,
       email: data.email,
       kw: data.kw,
@@ -147,266 +106,68 @@ app.post('/submit-client', async (req, res) => {
       panCard: `uploads/${clientName}/pancard.png`,
       bill: `uploads/${clientName}/bill.png`,
       ownershipProof: `uploads/${clientName}/ownershipproof.png`,
-      cancelCheque: `uploads/${clientName}/cancelcheque.png`
+      cancelCheque: `uploads/${clientName}/cancelcheque.png`,
+      purchaseAgreement: `uploads/${clientName}/purchaseagreement.png`,
+      netMeteringAgreement: `uploads/${clientName}/netmeteringagreement.png`
     };
 
+    // 📊 Save client data to OneDrive Excel
     const { workbook, token } = await getWorkbookFromOneDrive('TempData.xlsx');
     const sheet = workbook.getWorksheet('Client Data') || workbook.addWorksheet('Client Data');
 
-    const row = [
-      client.date, client.name, ` ${client.so || ''}`,client.houseNo, client.location,  client.landmark,
-      client.district, client.state, client.pin, client.mobile, client.email, client.kw, client.advance, client.totalCost,
-      client.aadharFront, client.aadharBack, client.panCard, client.bill,
-      client.ownershipProof, client.cancelCheque
-    ];
+    const newRow = sheet.addRow([
+      client.date, client.name, client.address, client.mobile, client.email, client.kw,
+      client.advance, client.totalCost, client.aadharFront, client.aadharBack, client.panCard, client.bill,
+      client.ownershipProof, client.cancelCheque, client.purchaseAgreement, client.netMeteringAgreement
+    ]);
 
+    newRow.hidden = false;
 
-
-    sheet.addRow(row);
     await uploadWorkbookToOneDrive('TempData.xlsx', workbook, token);
-
-
-    let tempAddress = '';
-    let tempLocation = '';
-    let tempCost = '';
-
-try {
-  const { workbook: tempBook } = await getWorkbookFromOneDrive('TempData.xlsx');
-  const tempSheet = tempBook.getWorksheet('Client Data');
-
-  tempSheet.eachRow((row, idx) => {
-    const name = (row.getCell(2).value || '').toString().toLowerCase().trim();
-    const mobile = (row.getCell(10).value || '').toString().trim();
-    const kwValue = (row.getCell(12).value || '').toString().trim();
-
-    if (
-      name === (client.name || '').toLowerCase().trim() &&
-      mobile === (client.mobile || '').trim() &&
-      kwValue === (client.kw || '').toString().trim()
-    ) {
-      const hno      = row.getCell(4)?.value?.toString().trim() || '';
-const location = row.getCell(5)?.value?.toString().trim() || '';
-const landmark = row.getCell(6)?.value?.toString().trim() || '';
-const district = row.getCell(7)?.value?.toString().trim() || '';
-const state    = row.getCell(8)?.value?.toString().trim() || '';
-const pin      = row.getCell(9)?.value?.toString().trim() || '';
-
-tempAddress = `${hno}, ${location}, ${landmark}, ${district}, ${state} - ${pin}`;
-tempLocation = `${district}, ${state}`;
-tempCost = row.getCell(14)?.value?.toString().trim() || '';
-
-    }
-  });
-} catch (err) {
-  console.warn('⚠️ Could not fetch address from TempData:', err.message);
-}
-
-    let proposalData = null;
-    try {
-      const { workbook: proposalBook } = await getWorkbookFromOneDrive('proposal.xlsx');
-      const proposalSheet = proposalBook.getWorksheet('Proposals');
-
-      const clientKW = (client.kw || '').toString().trim();
-      const clientMobile = (client.mobile || '').toString().trim();
-
-      console.log(`🧪 Searching in proposal.xlsx for: KW="${clientKW}", Mobile="${clientMobile}"`);
-
-      proposalSheet.eachRow((row, index) => {
-  if (index === 1) return; // skip header
-
-  const ref = (row.getCell(1).value || '').toString().trim(); // Ref: e.g., JK-05-9876543210
-  const match = ref.match(/^JK-(\d+)-(\d{10})$/);  // Safely extract KW and Mobile
-
-  if (!match) return;
-
-  const refKW = match[1];            // '05'
-  const refMobile = match[2];        // '9876543210'
-  const cleanClientMobile = (client.mobile || '').replace(/\D/g, '').slice(-10);
-
-  console.log(`🧪 Matching: RefKW(${refKW}) == ClientKW(${clientKW}), RefMob(${refMobile}) == ClientMob(${cleanClientMobile})`);
-
-  if (refKW === clientKW && refMobile === cleanClientMobile) {
-    console.log(`✅ Match found: Row ${index}`);
-
-          proposalData = {
-            name: row.getCell(8).value,
-            location: tempLocation,
-            address: tempAddress,
-            mobile: row.getCell(9).value || '',
-            price: row.getCell(10).value || '',
-            email: client.email,
-            kw: row.getCell(4).value || '',
-            panelBrand: row.getCell(11).value || '',
-            panelWp: row.getCell(12).value || '',
-            inverterBrand: row.getCell(13).value || '',
-            ref: row.getCell(1).value || '', 
-            date: row.getCell(2).value || client.date
-          };
-
-          proposalData.panelQty = proposalData.kw && proposalData.panelWp
-            ? Math.round((parseFloat(proposalData.kw) * 1000) / parseFloat(proposalData.panelWp))
-            : '';
-        }
-      });
-
-      if (!proposalData) {
-        console.warn('🚫 No matching row found in proposal.xlsx');
-      }
-
-    } catch (err) {
-      console.warn('⚠️ Proposal data not fetched:', err.message);
-    }
-
-    
-
-    let so = data.so || '';
-
-    try {
-      const { workbook: tempBook } = await getWorkbookFromOneDrive('TempData.xlsx');
-      const tempSheet = tempBook.getWorksheet('Client Data');
-
-      tempSheet.eachRow((row, idx) => {
-        const name = (row.getCell(2).value || '').toString().toLowerCase().trim();
-        const mobile = (row.getCell(10).value || '').toString().trim();
-
-        if (
-          name === (client.name || '').toLowerCase().trim() &&
-          mobile === (client.mobile || '').trim()
-        ) {
-          so = row.getCell(3)?.value?.toString() || '';
-        }
-      });
-    } catch (e) {
-      console.warn('⚠️ Could not fetch S/o from TempData.xlsx:', e.message);
-    }
-
-    let netSuccess = false;
-    let poSuccess = false;
-
-    if (proposalData) {
-      try {
-        const htmlPath = path.join(__dirname, 'public', 'net-metering-agreement.html');
-        const htmlContent = await fs.promises.readFile(htmlPath, 'utf8');
-
-        const today = new Date();
-        const day = today.getDate();
-        const month = today.toLocaleString('default', { month: 'long' });
-        const year = today.getFullYear();
-
-        const populatedHTML = htmlContent
-          .replace(/{{name}}/g, `<u>${client.name || ''}</u>`)
-          .replace(/{{location}}/g, `<u>${proposalData.location || ''}</u>`)
-          .replace(/{{so}}/g, `<u>${so || ''}</u>`)
-          .replace(/{{address}}/g, `<u>${proposalData.address || ''}</u>`)
-          .replace(/{{mobile}}/g, `<u>${proposalData.mobile || ''}</u>`)
-          .replace(/{{email}}/g, `<u>${proposalData.email || ''}</u>`)
-          .replace(/{{kw}}/g, `<u>${proposalData.kw || ''}</u>`)
-          .replace(/{{price}}/g, `<u>${tempCost || ''}</u>`)
-          .replace(/{{date}}/g, `<u>${proposalData.date || ''}</u>`)
-          .replace(/{{panelBrand}}/g, `<u>${proposalData.panelBrand || ''}</u>`)
-          .replace(/{{panelWp}}/g, `<u>${proposalData.panelWp || ''}</u>`)
-          .replace(/{{inverterBrand}}/g, `<u>${proposalData.inverterBrand || ''}</u>`)
-          .replace(/{{day}}/g, `<u>${day}</u>`)
-          .replace(/{{month}}/g, `<u>${month}</u>`)
-          .replace(/{{year}}/g, `<u>${year}</u>`);
-
-        const pdfBuffer = await generatePdfFromHtml(populatedHTML);
-        await uploadToOneDriveFolder(clientName, 'net-metering', pdfBuffer, 'net-metering-agreement.pdf');
-        console.log('📄 Net Metering Agreement created');
-        netSuccess = true;
-      } catch (err) {
-        console.warn('⚠️ Net Metering PDF generation failed:', err.message);
-      }
-
-      try {
-        const htmlPath = path.join(__dirname, 'public', 'purchase-order.html');
-        const htmlContent = await fs.promises.readFile(htmlPath, 'utf8');
-
-        const today = new Date();
-        const day = today.getDate();
-        const month = today.toLocaleString('default', { month: 'long' });
-        const year = today.getFullYear();
-        const todayDate = `${day}${getDateSuffix(day)} ${month}, ${year}`;
-
-        const populatedHTML = htmlContent
-          .replace(/{{name}}/g, client.name)
-          .replace(/{{address}}/g, proposalData.address || '')
-          .replace(/{{mobile}}/g, client.mobile)
-          .replace(/{{kw}}/g, proposalData.kw || '')
-          .replace(/{{ref}}/g, proposalData.ref || '')
-          .replace(/{{price}}/g, tempCost || '')
-          .replace(/{{today}}/g, todayDate)
-          .replace(/{{proposalDate}}/g, proposalData.date || '')
-          .replace(/{{panelBrand}}/g, proposalData.panelBrand || '')
-          .replace(/{{panelWp}}/g, proposalData.panelWp || '')
-          .replace(/{{inverterBrand}}/g, proposalData.inverterBrand || '')
-          .replace(/{{panelQty}}/g, proposalData.panelQty || '');
-
-        const pdfBuffer = await generatePdfFromHtml(populatedHTML);
-        await uploadToOneDriveFolder(clientName, 'purchase-order', pdfBuffer, 'purchase-order.pdf');
-        console.log('📃 Purchase Order PDF created');
-        poSuccess = true;
-      } catch (err) {
-        console.warn('⚠️ Purchase Order PDF generation failed:', err.message);
-      }
-    }
+    console.log('✅ Client data saved to OneDrive Excel.');
 
     res.send(`
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body {
-              background: #f0f8ff;
-              font-family: 'Segoe UI', sans-serif;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 90vh;
-            }
-            .toast {
-              background: #d7f8d7;
-              padding: 25px 30px;
-              border-radius: 12px;
-              box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-              color: #206020;
-              font-size: 18px;
-              line-height: 1.6;
-            }
-            .toast span {
-              display: block;
-              margin-top: 10px;
-            }
-            .toast .error {
-              color: #c0392b;
-              font-weight: bold;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="toast">
-            ✅ Client submitted successfully.
-            ${netSuccess ? '<span>📄 Net Metering PDF also generated!</span>' : '<span class="error">📄 Net Metering not created. Data mismatched!</span>'}
-            ${poSuccess ? '<span>📃 Purchase Order PDF also generated!</span>' : '<span class="error">📃 Purchase Order not created. Data mismatched!</span>'}
-          </div>
-        </body>
-      </html>
-    `);
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 80vh;
+          background-color: #f2f9ff;
+        }
+        .success {
+          font-size: 24px;
+          color: #2d7a2d;
+          background: #e8fce8;
+          padding: 20px 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          text-align: center;
+        }
+        @media (max-width: 768px) {
+          .success {
+            font-size: 28px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="success">✅ Client submitted successfully and all files saved .</div>
+    </body>
+  </html>
+`);
 
-    function getDateSuffix(day) {
-      if (day >= 11 && day <= 13) return 'th';
-      const lastDigit = day % 10;
-      return ['st', 'nd', 'rd'][lastDigit - 1] || 'th';
-    }
   } catch (err) {
     console.error('❌ Error in /submit-client:', err.message);
     res.status(500).send('⚠️ Could not save data to OneDrive.');
   }
 });
-
-
-
-
 
 
 
@@ -439,37 +200,6 @@ app.get('/search-client', async (req, res) => {
   }
 });
 
-app.get('/api/client-suggestions', async (req, res) => {
-  const query = (req.query.query || '').toLowerCase().trim();
-  if (!query) return res.json([]);
-
-  try {
-    const { workbook } = await getWorkbookFromOneDrive('TempData.xlsx');
-    const sheet = workbook.getWorksheet('Client Data');
-    const results = [];
-
-    sheet.eachRow((row, i) => {
-      if (i === 1) return; // skip header
-
-      const name = (row.getCell(2).value || '').toString();
-      const kw = (row.getCell(12).value || '').toString();
-      const mobile = (row.getCell(10).value || '').toString();
-
-      if (
-        name.toLowerCase().includes(query) ||
-        mobile.includes(query) ||
-        kw.includes(query)
-      ) {
-        results.push({ name, kw, mobile });
-      }
-    });
-
-    res.json(results.slice(0, 10)); // limit to top 10
-  } catch (err) {
-    console.error("❌ Suggestion error:", err.message);
-    res.json([]);
-  }
-});
 
 // ✅ Route to handle adding timeline event for a client via OneDrive
 app.post('/add-timeline', express.json(), async (req, res) => {
@@ -549,7 +279,7 @@ app.post('/submit-documents', async (req, res) => {
 
 
 app.get('/file-status/:clientName', async (req, res) => {
-  const clientNameRaw = req.params.clientName.trim().toLowerCase();
+  const clientName = req.params.clientName.trim().toLowerCase();
   const fileFields = [
     'AadharFront',
     'AadharBack',
@@ -562,7 +292,7 @@ app.get('/file-status/:clientName', async (req, res) => {
   ];
 
   try {
-    console.log(`📂 Checking files for: ${clientNameRaw}`);
+    console.log(`📂 Checking files for: ${clientName}`);
 
     let clientInfo = null;
     let fileStatus = [];
@@ -571,34 +301,30 @@ app.get('/file-status/:clientName', async (req, res) => {
     const worksheet = workbook.getWorksheet('Client Data');
 
     worksheet.eachRow((row, rowIndex) => {
-      const name = (row.getCell(2).value || '').toString().trim(); // B
-      const kw = (row.getCell(12).value || '').toString().trim(); // L
-      const mobile = (row.getCell(10).value || '').toString().trim(); // J
+      const rowClientName = (row.getCell(2).value || '').toString().trim().toLowerCase();
 
-      const fullNameFormat = `${name}-${kw}-${mobile}`.toLowerCase();
-      console.log(`🔍 Excel: '${fullNameFormat}' vs Search: '${clientNameRaw}'`);
+      console.log(`🔍 Excel: '${rowClientName}' vs Search: '${clientName}'`);
 
-      if (fullNameFormat === clientNameRaw) {
+      if (rowClientName === clientName) {
         clientInfo = {
-          name: name,
-          address: row.getCell(4).value || '',     // D (H.No.)
-          mobile: mobile,
-          email: row.getCell(11).value || '',      // K
-          kw: kw
+          name: row.getCell(2).value || '',
+          address: row.getCell(3).value || '',
+          mobile: row.getCell(4).value || '',
+          email: row.getCell(5).value || '',
+          kw: row.getCell(6).value || ''
         };
 
-        // Loop over columns O to V (15 to 22)
+        // Loop over columns I to P (9 to 16)
         fileFields.forEach((field, index) => {
-          const pathInExcel = row.getCell(15 + index).value?.toString().trim() || '';
+          const pathInExcel = row.getCell(9 + index).value?.toString().trim() || '';
           const label = field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
 
           fileStatus.push({
             file: field,
             label: label,
-            exists: !!pathInExcel
+            exists: !!pathInExcel  // We assume true if there's a path (skip fs.existsSync)
           });
         });
-        return;
       }
     });
 
@@ -618,23 +344,14 @@ app.get('/file-status/:clientName', async (req, res) => {
 });
 
 
-
-
-
 app.get('/check-files', async (req, res) => {
   try {
     const token = await getAccessToken();
-    const clientName = 'demo'; // 🔁 Replace with dynamic if needed
 
     const fileList = [
-      `uploads/${clientName}/aadharfront.png`,
-      `uploads/${clientName}/aadharback.png`,
-      `uploads/${clientName}/pancard.png`,
-      `uploads/${clientName}/bill.png`,
-      `uploads/${clientName}/ownershipproof.png`,
-      `uploads/${clientName}/cancelcheque.png`,
-      `uploads/${clientName}/net-metering-agreement.pdf`,
-      `uploads/${clientName}/purchase-order.pdf`
+      'uploads/demo/aadharfront.png',
+      'uploads/demo/pancard.png',
+      'uploads/demo/bill.png'
     ];
 
     const results = [];
@@ -642,37 +359,13 @@ app.get('/check-files', async (req, res) => {
     for (const path of fileList) {
       const encodedPath = encodeURIComponent(path);
       const url = `https://graph.microsoft.com/v1.0/users/muninderpal@jk17.onmicrosoft.com/drive/root:/${encodedPath}`;
-
       try {
-        await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
         results.push({ file: path, exists: true });
       } catch (err) {
         results.push({ file: path, exists: false });
       }
     }
-
-    // ✅ Extract PDF statuses
-    const netMeteringExists = results.find(f => f.file.includes('net-metering-agreement.pdf'))?.exists;
-    const purchaseOrderExists = results.find(f => f.file.includes('purchase-order.pdf'))?.exists;
-
-    // ✅ Update Excel (U = Purchase, V = Net Metering)
-    const { workbook } = await getWorkbookFromOneDrive('TempData.xlsx');
-    const sheet = workbook.getWorksheet('Client Data');
-
-    sheet.eachRow((row, i) => {
-      const name = (row.getCell(2).value || '').toString().toLowerCase().trim();
-      const mobile = (row.getCell(10).value || '').toString().trim();
-      const kw = (row.getCell(12).value || '').toString().trim();
-
-      if (name === 'simran' && mobile === '9650179900' && kw === '10') { // 🔁 Use dynamic match in real app
-        row.getCell('U').value = purchaseOrderExists ? 'Yes' : '';
-        row.getCell('V').value = netMeteringExists ? 'Yes' : '';
-      }
-    });
-
-    await saveWorkbookToOneDrive(workbook, 'TempData.xlsx');
 
     res.send(`<pre>${JSON.stringify(results, null, 2)}</pre>`);
   } catch (err) {
@@ -680,7 +373,6 @@ app.get('/check-files', async (req, res) => {
     res.status(500).send('Failed to check file statuses.');
   }
 });
-
 
 
 // 📅 View timeline of a client from OneDrive Excel
@@ -702,24 +394,25 @@ app.get('/view-timeline/:clientName', async (req, res) => {
 
     worksheet.eachRow((row, rowNumber) => {
       const rowValues = row.values;
+      const clientNameFromRow = rowValues[2]; // Column B = Name
+      const event = rowValues[3];             // Column C = Event
 
-      const name = (rowValues[2] || '').toString().trim().toLowerCase();   // Name - B
-      const kw = (rowValues[12] || '').toString().trim();                  // KW - L
-      const mobile = (rowValues[10] || '').toString().trim();             // Mobile - J
-      const expectedName = `${name}-${kw}-${mobile}`.toLowerCase();
-
-      if (expectedName === clientName) {
+      if (
+        clientNameFromRow &&
+        clientNameFromRow.toLowerCase().trim() === clientName &&
+        event && event.trim() !== ''
+      ) {
         clientTimeline.push({
-          appliedKW: rowValues[23] || '',                 // W
-          appliedPMSurya: rowValues[24] || '',            // X
-          dhbvnApplication: rowValues[25] || '',          // Y
-          loadNameChange: rowValues[26] || ''             // Z
+          event: event,
+          eventDate: rowValues[4],         // D
+          eventDescription: rowValues[5],  // E
+          status: rowValues[6]             // F
         });
       }
     });
 
     if (clientTimeline.length === 0) {
-      return res.status(404).json({ error: 'No timeline data found for this client' });
+      return res.status(404).json({ error: 'No timeline events found for this client' });
     }
 
     res.json(clientTimeline);
@@ -728,7 +421,6 @@ app.get('/view-timeline/:clientName', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 
 // 🧾 Get client info (basic details) from OneDrive
@@ -746,15 +438,15 @@ app.get('/client-info/:clientName', async (req, res) => {
     let clientInfo = null;
 
     sheet.eachRow((row) => {
-      const rowClientName = row.getCell(2).value?.toString().trim().toLowerCase(); // Column B - Name
+      const rowClientName = row.getCell(2).value?.toString().trim().toLowerCase(); // Column B
 
       if (rowClientName === clientName) {
         clientInfo = {
-          name: row.getCell(2).value || '',     // B - Name
-          address: row.getCell(4).value || '',  // D - Location
-          mobile: row.getCell(10).value || '',  // J - Mob. No.
-          email: row.getCell(11).value || '',   // K - Email ID
-          kw: row.getCell(12).value || ''       // L - KW
+          name: row.getCell(2).value || '',     // B
+          address: row.getCell(3).value || '',  // C
+          mobile: row.getCell(4).value || '',   // D
+          email: row.getCell(5).value || '',    // E
+          kw: row.getCell(6).value || ''        // F
         };
       }
     });
@@ -769,7 +461,6 @@ app.get('/client-info/:clientName', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 
 
@@ -796,52 +487,33 @@ app.post('/save-timeline', async (req, res) => {
     clientName
   } = req.body;
 
-  if (!clientName) {
-    console.warn('⛔ Client name missing in request');
-    return res.status(400).json({ error: 'Client name missing' });
-  }
+  if (!clientName) return res.status(400).json({ error: 'Client name missing' });
 
   try {
     const { workbook, token } = await getWorkbookFromOneDrive('TempData.xlsx');
     const sheet = workbook.getWorksheet('Client Data');
 
-    if (!sheet) {
-      console.error('📄 Sheet "Client Data" not found');
-      return res.status(404).json({ error: 'Client Data sheet not found' });
-    }
+    if (!sheet) return res.status(404).json({ error: 'Client Data sheet not found' });
 
     let found = false;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // Skip header
+    sheet.eachRow((row) => {
+      const nameCell = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
 
-      const name = (row.getCell(2).value || '').toString().trim();     // B
-      const mobile = (row.getCell(10).value || '').toString().trim();  // J
-      const kw = (row.getCell(12).value || '').toString().trim();      // L
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      console.log(`🔍 Comparing: Excel="${constructedName}" vs Incoming="${clientName.toLowerCase().trim()}"`);
-
-      if (constructedName === clientName.toLowerCase().trim()) {
-        if (appliedKW) row.getCell(23).value = appliedKW;                             // W
-if (appliedOnPMSurya) row.getCell(24).value = appliedOnPMSurya;               // X
-if (applicationDHBVN) row.getCell(25).value = applicationDHBVN;               // Y
-if (loadChangeReductionNewConnection) row.getCell(26).value = loadChangeReductionNewConnection; // Z
-
+      if (nameCell === clientName.toLowerCase().trim()) {
+        row.getCell(17).value = appliedKW;                             // Column Q
+        row.getCell(18).value = appliedOnPMSurya;                      // Column R
+        row.getCell(19).value = applicationDHBVN;                      // Column S
+        row.getCell(20).value = loadChangeReductionNewConnection;     // Column T
         found = true;
       }
     });
 
-    if (!found) {
-      console.warn(`🚫 Client not found for name: ${clientName}`);
-      return res.status(404).json({ error: 'Client not found in Excel' });
-    }
+    if (!found) return res.status(404).json({ error: 'Client not found in Excel' });
 
     await uploadWorkbookToOneDrive('TempData.xlsx', workbook, token);
-    console.log('✅ Timeline saved successfully for:', clientName);
-    res.json({ message: '✅ Timeline data saved successfully to OneDrive!' });
 
+    res.json({ message: '✅ Timeline data saved successfully to OneDrive!' });
   } catch (err) {
     console.error('❌ Error saving timeline data:', err.message);
     res.status(500).json({ error: 'Internal server error' });
@@ -850,7 +522,7 @@ if (loadChangeReductionNewConnection) row.getCell(26).value = loadChangeReductio
 
 
 
-
+// Route to fetch the application timeline for a specific client from OneDrive
 app.get('/application-timeline/:clientName', async (req, res) => {
   const clientName = req.params.clientName.toLowerCase().trim();
 
@@ -864,21 +536,15 @@ app.get('/application-timeline/:clientName', async (req, res) => {
 
     let result = null;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // Skip header
+    sheet.eachRow((row) => {
+      const nameCell = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
 
-      const name = (row.getCell(2).value || '').toString().trim();    // B
-      const mobile = (row.getCell(10).value || '').toString().trim(); // J ✅
-      const kw = (row.getCell(12).value || '').toString().trim();     // L ✅
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      if (constructedName === clientName) {
+      if (nameCell === clientName) {
         result = {
-          appliedKW: row.getCell(23)?.value || '',   // W
-          appliedOnPMSurya: row.getCell(24)?.value || '', // X
-          applicationDHBVN: row.getCell(25)?.value || '', // Y
-          loadChangeReductionNewConnection: row.getCell(26)?.value || '' // Z
+          appliedKW: row.getCell(17)?.value || '',
+          appliedOnPMSurya: row.getCell(18)?.value || '',
+          applicationDHBVN: row.getCell(19)?.value || '',
+          loadChangeReductionNewConnection: row.getCell(20)?.value || ''
         };
       }
     });
@@ -888,7 +554,6 @@ app.get('/application-timeline/:clientName', async (req, res) => {
     } else {
       res.status(404).json({ error: 'Client not found' });
     }
-
   } catch (err) {
     console.error('❌ Error loading timeline data from OneDrive:', err.message);
     res.status(500).json({ error: 'Internal server error' });
@@ -896,73 +561,7 @@ app.get('/application-timeline/:clientName', async (req, res) => {
 });
 
 
-//upload application odf to folder
-app.post('/upload-application-pdf', async (req, res) => {
-  const clientName = req.body.clientName?.toLowerCase().trim();
-  const file = req.files?.pdfFile;
-
-  if (!clientName || !file) {
-    return res.status(400).send('Missing client name or file');
-  }
-
-  try {
-    const ext = path.extname(file.name) || '.pdf';
-    const buffer = file.data;
-    const fileName = `application${ext}`;
-
-    await uploadToOneDriveFolder(clientName, 'application', buffer, fileName);
-    res.send('✅ Application PDF uploaded successfully');
-  } catch (err) {
-    console.error('❌ Error uploading application PDF:', err.message);
-    res.status(500).send('❌ Failed to upload Application PDF');
-  }
-});
-
-app.get('/check-application-pdf/:clientName', async (req, res) => {
-  const clientName = req.params.clientName?.toLowerCase().trim();
-  const filePath = `uploads/${clientName}/application.pdf`;
-
-  try {
-    const token = await getAccessToken();
-    const url = `https://graph.microsoft.com/v1.0/users/muninderpal@jk17.onmicrosoft.com/drive/root:/${filePath}`;
-
-    await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    res.json({ exists: true });
-  } catch (err) {
-    if (err.response?.status === 404) {
-      res.json({ exists: false });
-    } else {
-      console.error('❌ Error checking Application PDF:', err.message);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  }
-});
-
-app.get('/preview-pdf/:clientName', async (req, res) => {
-  const clientName = req.params.clientName.toLowerCase().trim();
-  const filePath = `uploads/${clientName}/application.pdf`;
-
-  try {
-    const token = await getAccessToken();
-    const fileUrl = `https://graph.microsoft.com/v1.0/users/muninderpal@jk17.onmicrosoft.com/drive/root:/${filePath}:/content`;
-
-    const response = await axios.get(fileUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: 'stream'
-    });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    response.data.pipe(res);
-  } catch (err) {
-    console.error('❌ Preview error:', err.message);
-    res.status(404).send('⚠️ PDF not found');
-  }
-});
-
-
+//project status timeline excel
 const projectFields = [
   "Civil", "Earthing", "EarthingCable", "Panel", "Inverter", "ACDB",
   "DCDB", "ACCable", "DCCable", "LA", "NetMetering"
@@ -979,36 +578,14 @@ app.post('/save-project-status', express.urlencoded({ extended: true }), async (
 
     let updated = false;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // skip header
-
-      const name = (row.getCell(2).value || '').toString().trim();       // B
-      const mobile = (row.getCell(10).value || '').toString().trim();    // J
-      const kw = (row.getCell(12).value || '').toString().trim();        // L 
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      if (constructedName === clientName) {
+    sheet.eachRow((row) => {
+      const nameCell = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
+      if (nameCell === clientName) {
         // Columns U (21) to AE (31)
         projectFields.forEach((field, index) => {
-        row.getCell(27 + index).value = req.body[field] || '';
+          row.getCell(21 + index).value = req.body[field] || '';
         });
-
-
         updated = true;
-
-        // ✅ Check if first 10 steps are all marked 'yes' or '✅'
-        const completedSteps = projectFields.slice(0, 10).map((_, i) => row.getCell(27 + i).value);
-        console.log('📋 Completed Steps:', completedSteps);
-
-        const allDone = completedSteps.every(step =>
-          ['yes', '✅'].includes((step || '').toString().trim().toLowerCase())
-        );
-
-        if (allDone) {
-          console.log(`✅ All 10 project steps completed for ${clientName}. Triggering PDF generation...`);
-          generateWorkCompletionReport(clientName); // Auto PDF generation
-        }
       }
     });
 
@@ -1018,135 +595,11 @@ app.post('/save-project-status', express.urlencoded({ extended: true }), async (
 
     await uploadWorkbookToOneDrive('TempData.xlsx', workbook, token);
     res.json({ message: '✅ Project status saved successfully to OneDrive' });
-
   } catch (err) {
     console.error('❌ Error saving project status:', err.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
-async function generateWorkCompletionReport(clientName) {
-  try {
-    console.log(`🔍 Starting Work Completion Report generation for: ${clientName}`);
-
-    const proposalFile = 'proposal.xlsx';
-    const htmlTemplatePath = path.join(__dirname, 'work-completion-report.html');
-    const saveFileName = 'work-completion-report.pdf';
-    const folderPath = `uploads/${clientName}`;
-
-    // ✂️ Extract KW and Mobile from clientName
-    const parts = clientName.split('-');
-    const clientKW = parts[1]?.trim();
-    const clientMobile = parts[2]?.trim();
-
-    if (!clientKW || !clientMobile) {
-      return console.log('❌ Cannot extract KW and Mobile from clientName');
-    }
-
-    // 🧾 Load proposal data
-    console.log('📑 Reading proposal.xlsx...');
-    const { workbook: proposalBook } = await getWorkbookFromOneDrive(proposalFile);
-    const proposalSheet = proposalBook.getWorksheet('Proposals');
-    if (!proposalSheet) return console.log('❌ Proposals sheet not found');
-
-    console.log('📄 Matching proposal row...');
-    let matchedRow;
-    proposalSheet.eachRow((row) => {
-      const ref = (row.getCell(1).value || '').toString(); // Ref: JK-10-9650179900
-      if (ref.includes(clientKW) && ref.includes(clientMobile)) {
-        matchedRow = row;
-      }
-    });
-
-    if (!matchedRow) return console.log('❌ No matching proposal row found');
-
-    // 🧠 Extract values
-    const panelWp = matchedRow.getCell(13).value || '';       // Panel Wp (Col M)
-    const inverterBrand = matchedRow.getCell(14).value || ''; // Inverter Brand (Col N)
-    const kw = matchedRow.getCell(4).value || '';             // KW (Col D)
-    const name = matchedRow.getCell(8).value || '';           // To Whom (Col H)
-    const address = matchedRow.getCell(5).value || '';        // Address (Col E)
-
-    // 📄 Read application.pdf and extract values
-    console.log('📥 Reading application.pdf from OneDrive...');
-    const appPdfBuffer = await downloadFileFromOneDrive(`${folderPath}/application.pdf`);
-    const pdfData = await pdfParse(appPdfBuffer);
-    const text = pdfData.text;
-    console.log('📄 Extracted PDF Text:\n', text.substring(0, 1000));
-
-
-    const dhbvn     = text.match(/Operation Sub-?Division.*?\n(.*?)G\d+-\d+/)?.[1]?.trim() || '';
-const applicationNo = text.match(/(G\d{2}-\d{3,}-\d{4}-\d{3,})/)?.[1]?.trim() || '';
-const applicationDate = text.match(/(\d{2}\/\d{2}\/\d{4})/)?.[1] || '';
-
-
-    // 🧩 Fill into HTML
-    console.log('🧩 Injecting data into HTML...');
-    let htmlContent = await fs.readFile(htmlTemplatePath, 'utf8');
-    htmlContent = htmlContent
-      .replace(/{{panelWp}}/g, panelWp)
-      .replace(/{{inverterBrand}}/g, inverterBrand)
-      .replace(/{{kw}}/g, kw)
-      .replace(/{{name}}/g, name)
-      .replace(/{{address}}/g, address)
-      .replace(/{{applicationNo}}/g, applicationNo)
-      .replace(/{{applicationDate}}/g, applicationDate)
-      .replace(/{{dhbvn}}/g, dhbvn);
-
-      // 👇 Add here before PDF generation
-console.log('📤 applicationNo:', applicationNo);
-console.log('📤 applicationDate:', applicationDate);
-console.log('📤 dhbvn:', dhbvn);
-console.log('📄 Final HTML preview:\n', htmlContent.substring(0, 500));
-
-    // 🖨️ Generate PDF
-    console.log('🖨️ Generating PDF with Puppeteer...');
-    const browser = await puppeteer.launch({ headless: 'new' });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-    await browser.close();
-
-    
-    // ☁️ Upload to OneDrive
-    console.log('☁️ Uploading work-completion-report.pdf to OneDrive...');
-    await uploadFileToOneDrive(`${folderPath}/${saveFileName}`, pdfBuffer);
-    console.log(`✅ Work Completion Report saved for ${clientName}`);
-  } catch (err) {
-    console.error('❌ Error generating Work Completion Report:', err.message);
-  }
-}
-
-
-const streamToBuffer = async (stream) => {
-  const chunks = [];
-  for await (const chunk of stream) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-};
-
-async function downloadFileFromOneDrive(filePath) {
-  const accessToken = await getAccessToken();
-  const client = require('@microsoft/microsoft-graph-client').Client.init({
-    authProvider: (done) => done(null, accessToken)
-  });
-
-  const responseStream = await client
-    .api(`/users/muninderpal@jk17.onmicrosoft.com/drive/root:/${filePath}:/content`)
-    .getStream();
-
-  return await streamToBuffer(responseStream);
-}
-
-
-const { Client } = require('@microsoft/microsoft-graph-client');
-require('isomorphic-fetch');
-
-
-
-
 
 
 app.get('/project-status/:clientName', async (req, res) => {
@@ -1159,42 +612,33 @@ app.get('/project-status/:clientName', async (req, res) => {
 
     let result = null;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // Skip header
-
-      const name = (row.getCell(2).value || '').toString().trim();     // B
-      const mobile = (row.getCell(10).value || '').toString().trim(); // J
-      const kw = (row.getCell(12).value || '').toString().trim();     // L
-
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      if (constructedName === clientName) {
-          result = {
-  Civil: row.getCell(27)?.value || '',
-  Earthing: row.getCell(28)?.value || '',
-  EarthingCable: row.getCell(29)?.value || '',
-  Panel: row.getCell(30)?.value || '',
-  Inverter: row.getCell(31)?.value || '',
-  ACDB: row.getCell(32)?.value || '',
-  DCDB: row.getCell(33)?.value || '',
-  ACCable: row.getCell(34)?.value || '',
-  DCCable: row.getCell(35)?.value || '',
-  LA: row.getCell(36)?.value || '',
-  NetMetering: row.getCell(37)?.value || ''
-};
-
+    sheet.eachRow(row => {
+      const name = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
+      if (name === clientName) {
+        result = {
+          Civil: row.getCell(21)?.value || '',
+          Earthing: row.getCell(22)?.value || '',
+          EarthingCable: row.getCell(23)?.value || '',
+          Panel: row.getCell(24)?.value || '',
+          Inverter: row.getCell(25)?.value || '',
+          ACDB: row.getCell(26)?.value || '',
+          DCDB: row.getCell(27)?.value || '',
+          ACCable: row.getCell(28)?.value || '',
+          DCCable: row.getCell(29)?.value || '',
+          LA: row.getCell(30)?.value || '',
+          NetMetering: row.getCell(31)?.value || ''
+        };
       }
     });
 
     if (!result) return res.status(404).json({ error: 'Client not found' });
     res.json({ status: result });
-
   } catch (err) {
     console.error('❌ Error loading project status from OneDrive:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // 💸 Payment timeline autofetch route from OneDrive
 app.get('/payment-status/:clientName', async (req, res) => {
@@ -1207,28 +651,21 @@ app.get('/payment-status/:clientName', async (req, res) => {
 
     let result = null;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // Skip header
-
-      const name = (row.getCell(2).value || '').toString().trim();     // B
-      const mobile = (row.getCell(10).value || '').toString().trim();  // J
-      const kw = (row.getCell(12).value || '').toString().trim();      // L
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      if (constructedName === clientName) {
+    sheet.eachRow((row) => {
+      const name = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
+      if (name === clientName) {
         result = {
-          totalCost: row.getCell(14)?.value || '',   // N
-          advance: row.getCell(13)?.value || '',     // M
+          totalCost: row.getCell(8)?.value || '',   // Column H
+          advance: row.getCell(7)?.value || '',     // Column G
           projectStatus: {
-            Civil: row.getCell(27)?.value || '',       // AA
-            NetMetering: row.getCell(37)?.value || ''  // AK
+            Civil: row.getCell(21)?.value || '',       // Column U
+            NetMetering: row.getCell(31)?.value || ''  // Column AE
           },
           saved: {
-            installment2: row.getCell(38)?.value || '',   // AL
-            installment3: row.getCell(39)?.value || '',   // AM
-            finalPayment: row.getCell(40)?.value || '',   // AN
-            balance: row.getCell(41)?.value || ''         // AO
+            installment2: row.getCell(32)?.value || '',   // AF
+            installment3: row.getCell(33)?.value || '',   // AG
+            finalPayment: row.getCell(34)?.value || '',   // AH
+            balance: row.getCell(35)?.value || ''         // AI
           }
         };
       }
@@ -1243,8 +680,6 @@ app.get('/payment-status/:clientName', async (req, res) => {
 });
 
 
-
-
 // 💾 Save payment status to OneDrive Excel
 app.post('/save-payment-status', express.urlencoded({ extended: true }), async (req, res) => {
   const clientName = req.body.clientName?.toLowerCase().trim();
@@ -1257,20 +692,13 @@ app.post('/save-payment-status', express.urlencoded({ extended: true }), async (
 
     let updated = false;
 
-    sheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return; // Skip header
-
-      const name = (row.getCell(2).value || '').toString().trim();     // B
-      const mobile = (row.getCell(10).value || '').toString().trim();  // J
-      const kw = (row.getCell(12).value || '').toString().trim();      // L
-
-      const constructedName = `${name}-${kw}-${mobile}`.toLowerCase().replace(/\s+/g, '_');
-
-      if (constructedName === clientName) {
-        row.getCell(38).value = req.body.installment2 || '';   // AL
-        row.getCell(39).value = req.body.installment3 || '';   // AM
-        row.getCell(40).value = req.body.finalPayment || '';   // AN
-        row.getCell(41).value = req.body.balance || '';        // AO
+    sheet.eachRow(row => {
+      const nameCell = row.getCell(2).value?.toString().toLowerCase().trim(); // Column B
+      if (nameCell === clientName) {
+        row.getCell(32).value = req.body.installment2 || '';   // AF
+        row.getCell(33).value = req.body.installment3 || '';   // AG
+        row.getCell(34).value = req.body.finalPayment || '';   // AH
+        row.getCell(35).value = req.body.balance || '';        // AI
         updated = true;
       }
     });
@@ -1284,7 +712,6 @@ app.post('/save-payment-status', express.urlencoded({ extended: true }), async (
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 
 
@@ -2252,18 +1679,18 @@ app.post('/save-proposal', async (req, res) => {
       sheet = workbook.addWorksheet('Proposals');
       sheet.addRow([
         'Ref', 'Date', 'Subsidy', 'KW', 'Address', 'State', 'City', 
-        'To Whom', 'Mobile', 'Price', 'Panel Brand', 'Panel Wp', 'Inverter Brand', 'sentBy', 'Battery Info', 'Battery Warranty', 'Battery Qty', 'Battery Name'
+        'To Whom', 'Mobile', 'Price', 'Panel Brand', 'Panel Wp', 'Inverter Brand', 'sentBy'
       ]);
     }
 
-    // Auto-generate Ref No like JK-5-9999999999
+    // Auto-generate Ref No like 01P, 02P...
     const lastRow = sheet.lastRow;
     let newNumber = 1;
     if (lastRow && lastRow.getCell(1).value && lastRow.getCell(1).value.toString().endsWith('P')) {
       const lastRef = lastRow.getCell(1).value.toString().replace('P', '');
       newNumber = parseInt(lastRef) + 1;
     }
-    const newRef = `JK-${data.kw}-${data.mobile}`;
+    const newRef = `${String(newNumber).padStart(2, '0')}P`;
 
     sheet.addRow([
       newRef,
@@ -2279,11 +1706,7 @@ app.post('/save-proposal', async (req, res) => {
       data.panelBrand,
       data.panelWp,
       data.inverterBrand,
-      data.sentBy,
-      data.batteryinfo,
-      data.batterywarranty,
-      data.batteryqty, 
-      data.batteryname
+      data.sentBy
     ]);
 
     await uploadWorkbookToOneDrive(fileName, workbook, token);
@@ -2334,7 +1757,6 @@ app.get('/get-proposal', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error reading Excel from cloud' });
   }
 });
-
 
 
 
@@ -2758,17 +2180,6 @@ module.exports = {
   uploadWorkbookToOneDrive
 };
 
-
-
-
-//Login page starts here
-//Login page starts here
-//Login page starts here
-//Login page starts here
-
-
-
-  
 // 🚀 Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

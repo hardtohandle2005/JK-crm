@@ -5,10 +5,7 @@ const qs = require('qs');
 const path = require('path');
 const ExcelJS = require('exceljs');
 require('dotenv').config();
-const pdfParse = require('pdf-parse');
-const fs = require('fs');               // For fs.createReadStream etc.
-const fsp = require('fs').promises;     // For await fsp.readFile(...)
-const sharp = require('sharp'); // add at top of your file
+const fs = require('fs');           
 
 
 const app = express();
